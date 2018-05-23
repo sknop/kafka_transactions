@@ -1,0 +1,31 @@
+{
+  "type" : "record",
+  "name" : "Customer",
+  "namespace" : "schema",
+  "fields" : [ {
+      "name" : "customerId",
+      "type" : "int",
+      "doc"  : "Identifier for reference"
+   }, {
+      "name" : "firstName",
+      "type" : "string",
+      "doc"  : "First Name of user"
+  }, {
+      "name" : "lastName",
+      "type" : "string",
+      "doc"  : "Last name of user"
+  }, {
+      "name" : "email",
+      "type" : "string",
+      "doc"  : "Email address of user"
+  }, {
+        "name" : "update",
+        "type" : "string",
+        "doc"  : "Update timestamp (as a string)"
+  }, {
+           "name" : "epoch",
+           "type" : "int",
+           "doc"  : "How often has this user been updated?"
+     } ],
+  "doc:" : "Schema of user"
+}

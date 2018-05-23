@@ -1,0 +1,23 @@
+{
+  "type" : "record",
+  "name" : "OrderItem",
+  "namespace" : "schema",
+  "fields" : [ {
+               "name" : "productId",
+               "type" : "int",
+               "doc"  : "The product"
+   }, {
+      "name" : "orderId",
+      "type" : "int",
+      "doc"  : "The order"
+  }, {
+     "name" : "count",
+     "type" : "int",
+     "doc"  : "Number of Units"
+   }, {
+      "name" : "price",
+      "type" : "float",
+      "doc"  : "Price per Unit (at sales time)"
+    }  ],
+   "doc:" : "Individual order item (N-M table order/product)"
+}

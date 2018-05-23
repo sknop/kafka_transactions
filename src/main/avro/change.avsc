@@ -1,0 +1,29 @@
+{
+  "namespace": "schema",
+  "type": "record",
+  "name": "Change",
+  "doc": "Perforce change",
+  "fields":
+  [
+      {
+        "name": "change",
+        "type": "int",
+        "doc": "The change number"
+      },
+      {
+        "name": "date",
+        "type": "long",
+        "doc":  "Timestamp of the change"
+      },
+      {
+        "name": "user",
+        "type": "string",
+        "doc" : "The user who created the change"
+      },
+      {
+        "name": "client",
+        "type": "string",
+        "doc" : "The client workspace where the change was submitted"
+      }
+  ]
+}

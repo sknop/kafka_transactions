@@ -1,0 +1,19 @@
+{
+  "type" : "record",
+  "name" : "Order",
+  "namespace" : "schema",
+  "fields" : [ {
+       "name" : "orderId",
+       "type" : "int",
+       "doc"  : "Identifier for reference"
+   }, {
+        "name" : "date",
+        "type" : "long",
+        "doc"  : "UNIX epoch time in seconds"
+  }, {
+       "name" : "customerId",
+       "type" : "string",
+       "doc"  : "Customer id for the order"
+  } ],
+   "doc:" : "Order Header"
+}

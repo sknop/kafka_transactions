@@ -1,0 +1,29 @@
+{
+  "namespace": "schema",
+  "type": "record",
+  "name": "Revision",
+  "doc": "Individual File",
+  "fields":
+  [
+    {
+      "name": "change",
+      "type": "int",
+      "doc":  "Change that created this revision"
+    },
+    {
+    "name": "filename",
+    "type": "string",
+    "doc":  "Filename"
+    },
+    {
+    "name": "revision",
+    "type": "int",
+    "doc" : "The revision of the file"
+    },
+    {
+    "name": "action",
+    "type": "string",
+    "doc" : "The action that created this revision"
+    }
+  ]
+}
