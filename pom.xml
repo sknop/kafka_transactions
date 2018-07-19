@@ -10,12 +10,14 @@
 
     <properties>
         <!-- Keep Confluent versions as properties to allow easy modification -->
-        <confluent.version>4.1.0</confluent.version>
+        <confluent.version>4.1.1</confluent.version>
         <kafka.version>1.1.0</kafka.version>
         <nitrite.version>3.0.0</nitrite.version>
         <!-- Maven properties for compilation -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <downloadSources>true</downloadSources>
+        <downloadJavadocs>true</downloadJavadocs>
     </properties>
     <dependencies>
         <!-- Add the Kafka dependency -->
@@ -47,6 +49,11 @@
         <dependency>
             <groupId>io.confluent</groupId>
             <artifactId>kafka-streams-avro-serde</artifactId>
+            <version>${confluent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>monitoring-interceptors</artifactId>
             <version>${confluent.version}</version>
         </dependency>
         <dependency>
