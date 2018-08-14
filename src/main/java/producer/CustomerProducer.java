@@ -13,6 +13,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.IntegerSerializer;
 import schema.Customer;
 
+import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
@@ -63,6 +64,13 @@ public class CustomerProducer {
         if (maxCustomers == -1) {
             while (true) {
                 doProduce(producer);
+                System.out.println("Press return for next ...");
+
+                try {
+                    int key = System.in.read();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
         else {

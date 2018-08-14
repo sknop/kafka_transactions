@@ -75,6 +75,7 @@ public class EpochCustomerProducer {
         properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
         properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
         properties.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryURL);
+        properties.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
 
         return new KafkaStreams(topology, properties);
     }
@@ -89,7 +90,7 @@ public class EpochCustomerProducer {
                 return streams.store(storeName, queryableStoreType);
             } catch (InvalidStateStoreException ignored) {
                 totalTime += 50;
-                System.out.println("Not ready, retrying ... [" + totalTime + "]"); // store not yet ready for querying
+                System.out.println("Not ready, retrying ... [" + totalTime + "] " + ignored); // store not yet ready for querying
                 Thread.sleep(50);
             }
         }
