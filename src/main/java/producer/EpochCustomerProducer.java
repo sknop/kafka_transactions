@@ -46,6 +46,7 @@ public class EpochCustomerProducer {
     private String schemaRegistryURL;
 
     private Random random = new Random();
+    private boolean doProduce = false;
 
     public EpochCustomerProducer(Namespace options) {
         customerTopic = options.get("customer_topic");
@@ -80,22 +81,6 @@ public class EpochCustomerProducer {
         return new KafkaStreams(topology, properties);
     }
 
-    static <T> T waitUntilStoreIsQueryable(final String storeName,
-                                                  final QueryableStoreType<T> queryableStoreType,
-                                                  final KafkaStreams streams) throws InterruptedException {
-        int totalTime = 0;
-
-        while (true) {
-            try {
-                return streams.store(storeName, queryableStoreType);
-            } catch (InvalidStateStoreException ignored) {
-                totalTime += 50;
-                System.out.println("Not ready, retrying ... [" + totalTime + "] " + ignored); // store not yet ready for querying
-                Thread.sleep(50);
-            }
-        }
-    }
-
     private void produce() {
         KafkaProducer<Integer, Object> producer = createProducer();
         StreamsBuilder builder = new StreamsBuilder();
@@ -108,25 +93,32 @@ public class EpochCustomerProducer {
         KTable<Integer, Customer> existingCustomers = builder
                 .table(customerTopic, Materialized.<Integer, Customer, KeyValueStore<Bytes, byte[]>>as("customer-store"));
         KafkaStreams streams = createStreams(builder.build());
-        streams.start();
 
-        try {
-            waitUntilStoreIsQueryable("customer-store", QueryableStoreTypes.keyValueStore(), streams);
-        }
-        catch (InterruptedException ignored) {
+        streams.setStateListener((newState, oldState) -> {
+            System.out.println("*** State transition from " + oldState + " to " + newState);
 
-        }
-
-        String storeName = existingCustomers.queryableStoreName();
-        ReadOnlyKeyValueStore<Integer, Customer> keyValueStore = streams.store(storeName, QueryableStoreTypes.keyValueStore());
+            if (KafkaStreams.State.REBALANCING == oldState && KafkaStreams.State.RUNNING == newState) {
+                System.out.println("State store ready, off we go!");
+                doProduce = true;
+                produceWithStore(producer, existingCustomers, streams);
+            }
+        });
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("Shutting down gracefully ...");
+            doProduce = false;
             producer.close();
             streams.close();
         }));
 
-        while(true) {
+        streams.start();
+    }
+
+    private void produceWithStore(KafkaProducer<Integer, Object> producer, KTable<Integer, Customer> existingCustomers, KafkaStreams streams) {
+        String storeName = existingCustomers.queryableStoreName();
+        ReadOnlyKeyValueStore<Integer, Customer> keyValueStore = streams.store(storeName, QueryableStoreTypes.keyValueStore());
+
+        while(doProduce) {
             ProducerRecord<Integer, Object> record = createRecord(keyValueStore);
 
             producer.send(record);
