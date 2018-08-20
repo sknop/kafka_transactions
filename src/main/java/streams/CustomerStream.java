@@ -68,9 +68,11 @@ public class CustomerStream {
 //        builder.addStateStore(
 //                Stores.keyValueStoreBuilder(storeSupplier, Serdes.String(), Serdes.Integer())); // 2
 //
-        KTable<Integer, Customer> existingCustomers = builder.table(customerTopic);
+        // KTable<Integer, Customer> existingCustomers = builder.table(customerTopic);
+        KStream<Integer, Customer> existingCustomers = builder.stream(customerTopic);
 
-        existingCustomers.toStream().print(Printed.toSysOut());
+        // existingCustomers.toStream().print(Printed.toSysOut());
+        existingCustomers.print(Printed.toSysOut());
 
         KafkaStreams streams = createStreams(builder.build());
         streams.start();
