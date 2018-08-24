@@ -4,6 +4,7 @@ import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 import net.sourceforge.argparse4j.ArgumentParserBuilder;
 import net.sourceforge.argparse4j.ArgumentParsers;
+import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
@@ -33,12 +34,15 @@ public class CustomerProducer {
 
     private Random random = new Random();
 
+    private boolean interactive;
+
     public CustomerProducer(Namespace options) {
         customerTopic = options.get("customer_topic");
         maxCustomers = options.get("max_customers");
         largestCustomerId = options.get("largest_customerid");
         bootstrapServers = options.get("bootstrap_servers");
         schemaRegistryURL = options.get("schema_registry");
+        interactive = options.get("interactive");
     }
 
     private KafkaProducer<Integer, Object> createProducer() {
@@ -64,12 +68,15 @@ public class CustomerProducer {
         if (maxCustomers == -1) {
             while (true) {
                 doProduce(producer);
-                System.out.println("Press return for next ...");
 
-                try {
-                    int key = System.in.read();
-                } catch (IOException e) {
-                    e.printStackTrace();
+                if (interactive) {
+                    System.out.println("Press return for next ...");
+
+                    try {
+                        int key = System.in.read();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
@@ -141,6 +148,11 @@ public class CustomerProducer {
                 .type(String.class)
                 .setDefault(SCHEMA_REGISTRY_URL)
                 .help(String.format("Schema registry URL(de fault %s)", SCHEMA_REGISTRY_URL));
+        parser.addArgument("-i", "--interactive")
+                .action(Arguments.storeConst())
+                .setDefault(Boolean.FALSE)
+                .setConst(Boolean.TRUE)
+                .help("If enabled, will produce one event and wait for <Return>");
 
         try {
             Namespace options = parser.parseArgs(args);
