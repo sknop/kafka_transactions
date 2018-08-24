@@ -14,18 +14,14 @@ import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.KTable;
-import org.apache.kafka.streams.kstream.Printed;
-import org.apache.kafka.streams.state.KeyValueBytesStoreSupplier;
-import org.apache.kafka.streams.state.Stores;
 import schema.Customer;
 
 import java.util.Properties;
 
 public class CustomerStream {
     final static String CUSTOMER_TOPIC = "customer";
-    public static final String BOOTSTRAP_SERVERS = "localhost:9092";
-    public static final String SCHEMA_REGISTRY_URL = "http://localhost:8081";
+    final static String BOOTSTRAP_SERVERS = "localhost:9092";
+    final static String SCHEMA_REGISTRY_URL = "http://localhost:8081";
 
     private String customerTopic;
 
@@ -72,7 +68,8 @@ public class CustomerStream {
         KStream<Integer, Customer> existingCustomers = builder.stream(customerTopic);
 
         // existingCustomers.toStream().print(Printed.toSysOut());
-        existingCustomers.print(Printed.toSysOut());
+        // existingCustomers.print(Printed.toSysOut());
+        existingCustomers.foreach((key, value) -> System.out.println(key + " => " + value));
 
         KafkaStreams streams = createStreams(builder.build());
         streams.start();
@@ -82,7 +79,7 @@ public class CustomerStream {
     }
 
     public static void main(String[] args) {
-        ArgumentParserBuilder builder = ArgumentParsers.newFor("EpochCustomerProducer").addHelp(true);
+        ArgumentParserBuilder builder = ArgumentParsers.newFor("CustomerProducer").addHelp(true);
 
         ArgumentParser parser = builder.build();
         parser.addArgument("--customer-topic")
