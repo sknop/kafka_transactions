@@ -1,5 +1,6 @@
 package processor;
 
+import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import net.sourceforge.argparse4j.ArgumentParserBuilder;
@@ -8,17 +9,23 @@ import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
+import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Transformer;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.state.KeyValueBytesStoreSupplier;
 import org.apache.kafka.streams.state.KeyValueStore;
+import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
 import schema.Customer;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Properties;
 
 public class CustomerDeduplicator {
@@ -76,6 +83,8 @@ public class CustomerDeduplicator {
         public KeyValue<K, V> transform(final K key, final V value) {
             KeyValue<K, V> output;
 
+            System.out.println("Inside transform, k = " + key + " value = " + value);
+
             V storedValue = customerStore.get(key);
             if (storedValue != null) {
                 // duplicate, increase epoch
@@ -114,18 +123,40 @@ public class CustomerDeduplicator {
 
         Properties streamsConfiguration = new Properties();
         streamsConfiguration.put(StreamsConfig.APPLICATION_ID_CONFIG, "deduplication-customer-stream");
+        streamsConfiguration.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         streamsConfiguration.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
         streamsConfiguration.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
-        streamsConfiguration.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryURL);
+        streamsConfiguration.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryURL);
         streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         // Use a temporary directory for storing state, which will be automatically removed after the test.
         // streamsConfiguration.put(StreamsConfig.STATE_DIR_CONFIG, TestUtils.tempDirectory().getAbsolutePath());
 
-        KeyValueBytesStoreSupplier deduplicationStoreSupplier = Stores.persistentKeyValueStore ("eventId-store");
-        builder.addStateStore(Stores.keyValueStoreBuilder(
-                deduplicationStoreSupplier,
-                Serdes.Integer(),
-                new SpecificAvroSerde()));
+        Serde<Customer> customerSerde = new SpecificAvroSerde<>();
+        Map<String, String> schemaConfig =
+                Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryURL);
+
+        customerSerde.configure(schemaConfig, false);
+
+        KeyValueBytesStoreSupplier deduplicationStoreSupplier = Stores.persistentKeyValueStore ("unique-customer-store");
+        StoreBuilder<KeyValueStore<Integer, Customer>> customerStoreBuilder =
+                Stores.keyValueStoreBuilder(deduplicationStoreSupplier, Serdes.Integer(), customerSerde);
+
+        builder.addStateStore(customerStoreBuilder);
+
+        KStream<Integer, Customer> input = builder.stream(customerTopic);
+        KStream<Integer, Customer> deduplicated = input
+                .peek((k,v) -> System.out.println("Peeked key = " + k + " value = " + v))
+                .transform(() -> new DeduplicationTransformer<>(),"unique-customer-store"
+        );
+        deduplicated.to(uniqueTopic);
+
+        KafkaStreams streams = new KafkaStreams(builder.build(), streamsConfiguration);
+        streams.start();
+
+        System.out.println("Deduplicator is up");
+
+        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
+
 
     }
 
