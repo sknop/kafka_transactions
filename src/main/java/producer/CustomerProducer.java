@@ -11,7 +11,10 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.IntegerSerializer;
+import io.confluent.kafka.serializers.subject.RecordNameStrategy;
+import io.confluent.kafka.serializers.subject.TopicRecordNameStrategy;
 import schema.Customer;
 
 import java.io.IOException;
@@ -19,6 +22,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class CustomerProducer {
     final static String CUSTOMER_TOPIC = "customer";
@@ -35,6 +40,10 @@ public class CustomerProducer {
     private Random random = new Random();
 
     private boolean interactive;
+    private boolean doProduce = true;
+    private boolean verbose = false;
+
+    private int produced = 0;
 
     public CustomerProducer(Namespace options) {
         customerTopic = options.get("customer_topic");
@@ -43,6 +52,7 @@ public class CustomerProducer {
         bootstrapServers = options.get("bootstrap_servers");
         schemaRegistryURL = options.get("schema_registry");
         interactive = options.get("interactive");
+        verbose = options.get("verbose");
     }
 
     private KafkaProducer<Integer, Object> createProducer() {
@@ -50,9 +60,16 @@ public class CustomerProducer {
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+        properties.put(ProducerConfig.ACKS_CONFIG, "all");
         properties.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryURL);
+        properties.put(KafkaAvroSerializerConfig.KEY_SUBJECT_NAME_STRATEGY,RecordNameStrategy.class);
+        properties.put(KafkaAvroSerializerConfig.VALUE_SUBJECT_NAME_STRATEGY,RecordNameStrategy.class);
+
         properties.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG,
                 "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor");
+        // properties.put("confluent.monitoring.interceptor.bootstrap.servers", bootstrapServers);
+        // properties.put("confluent.monitoring.interceptor.timeout.ms", 3000);
+        // properties.put("confluent.monitoring.interceptor.publishMs", 10000);
 
         return new KafkaProducer<>(properties);
     }
@@ -62,11 +79,12 @@ public class CustomerProducer {
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("Shutting down gracefully ...");
+            doProduce = false;
             producer.close();
         }));
 
         if (maxCustomers == -1) {
-            while (true) {
+            while (doProduce) {
                 doProduce(producer);
 
                 if (interactive) {
@@ -85,16 +103,31 @@ public class CustomerProducer {
                 doProduce(producer);
             }
         }
+
+        System.out.println("Total produced = " + produced);
     }
 
     private void doProduce(KafkaProducer<Integer, Object> producer) {
         ProducerRecord<Integer, Object> record = createRecord();
+        int valueSize = 0;
 
-        producer.send(record);
+        Future<RecordMetadata> future = producer.send(record);
+        try {
+            RecordMetadata result = future.get();
+            valueSize = result.serializedValueSize();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
         producer.flush();
 
-        System.out.println("Produced " + record);
+        if (verbose)
+            System.out.println("Produced [" +valueSize + "] " + record);
+        produced++;
     }
+
     private ProducerRecord<Integer,Object> createRecord() {
         // create a random number up to max_customers
         // search db for that number
@@ -153,6 +186,11 @@ public class CustomerProducer {
                 .setDefault(Boolean.FALSE)
                 .setConst(Boolean.TRUE)
                 .help("If enabled, will produce one event and wait for <Return>");
+        parser.addArgument("-v", "--verbose")
+                .action(Arguments.storeConst())
+                .setDefault(Boolean.FALSE)
+                .setConst(Boolean.TRUE)
+                .help("If enabled, will print out every message created");
 
         try {
             Namespace options = parser.parseArgs(args);

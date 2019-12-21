@@ -8,15 +8,20 @@ import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
-import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.KTable;
+import org.apache.kafka.streams.kstream.*;
+import org.apache.kafka.streams.state.KeyValueStore;
 import schema.Customer;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public class CustomerDeduplicateJoin {
@@ -43,8 +48,6 @@ public class CustomerDeduplicateJoin {
         properties.put(StreamsConfig.APPLICATION_ID_CONFIG, "customer-deduplicate-stream");
         properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 
-        // properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-
         // Specify default (de)serializers for record keys and for record values.
         properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
         properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
@@ -57,11 +60,35 @@ public class CustomerDeduplicateJoin {
         StreamsBuilder builder = new StreamsBuilder();
 
         KStream<Integer, Customer> existingCustomers = builder.stream(customerTopic);
-        KTable<Integer, Customer> uniqueCustomers = builder.table(uniqueTopic);
+
+        Map<String, String> changeLogConfigs = new HashMap<>();
+        // put any valid topic configs here
+        changeLogConfigs.put("segment.ms", "60000");
+        changeLogConfigs.put("segment.bytes", "100000");
+        changeLogConfigs.put("cleanup.policy", "compact,delete");
+
+        Serde<Customer> customerSerde = new SpecificAvroSerde<>();
+        Map<String, String> schemaConfig =
+                Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryURL);
+        customerSerde.configure(schemaConfig, false);
+
+        KTable<Integer, Customer> uniqueCustomers = builder.table(uniqueTopic, Consumed.with(Serdes.Integer(), customerSerde),
+                Materialized.<Integer, Customer, KeyValueStore<Bytes, byte[]>>as("uniqueCustomerTableStore")
+                        .withLoggingEnabled(changeLogConfigs).
+                        withCachingEnabled()
+        );
 
         existingCustomers
-                .leftJoin(uniqueCustomers, (customer, unique) ->
-                        (unique != null && customer.getCustomerId() == unique.getCustomerId()) ? null : customer)
+                .leftJoin(uniqueCustomers, (customer, unique) -> {
+                    Customer result = customer;
+                    if (unique != null) {
+                        if (customer.getCustomerId().equals(unique.getCustomerId())) {
+                            result = unique;
+                            result.setEpoch( result.getEpoch() + 1);
+                        }
+                    }
+                    return result;
+                })
                 .peek((k,v) -> System.out.println("Peeked key = " + k + " value = " + v))
                 .filter( ((key, value) -> (value != null)))
                 .to(uniqueTopic);

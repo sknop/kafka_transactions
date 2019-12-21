@@ -30,7 +30,7 @@ import java.util.Properties;
 
 public class CustomerDeduplicator {
     final static String CUSTOMER_TOPIC = "customer";
-    final static String UNIQUE_TOPIC = "customer_unique";
+    final static String UNIQUE_TOPIC = "customer-unique";
     public static final String BOOTSTRAP_SERVERS = "localhost:9092";
     public static final String SCHEMA_REGISTRY_URL = "http://localhost:8081";
 
@@ -83,8 +83,6 @@ public class CustomerDeduplicator {
         public KeyValue<K, V> transform(final K key, final V value) {
             KeyValue<K, V> output;
 
-            System.out.println("Inside transform, k = " + key + " value = " + value);
-
             V storedValue = customerStore.get(key);
             if (storedValue != null) {
                 // duplicate, increase epoch
@@ -128,6 +126,7 @@ public class CustomerDeduplicator {
         streamsConfiguration.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
         streamsConfiguration.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryURL);
         streamsConfiguration.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+
         // Use a temporary directory for storing state, which will be automatically removed after the test.
         // streamsConfiguration.put(StreamsConfig.STATE_DIR_CONFIG, TestUtils.tempDirectory().getAbsolutePath());
 
@@ -145,8 +144,8 @@ public class CustomerDeduplicator {
 
         KStream<Integer, Customer> input = builder.stream(customerTopic);
         KStream<Integer, Customer> deduplicated = input
-                .peek((k,v) -> System.out.println("Peeked key = " + k + " value = " + v))
-                .transform(() -> new DeduplicationTransformer<>(),"unique-customer-store"
+                .transform(() -> new DeduplicationTransformer<>(),"unique-customer-store")
+                .peek((k,v) -> System.out.println("Result = " + k + " value = " + v)
         );
         deduplicated.to(uniqueTopic);
 

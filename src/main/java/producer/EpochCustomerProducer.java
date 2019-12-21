@@ -45,6 +45,8 @@ public class EpochCustomerProducer {
     private Random random = new Random(System.currentTimeMillis());
     private boolean doProduce = false;
 
+    private int produced = 0;
+
     public EpochCustomerProducer(Namespace options) {
         customerTopic = options.get("customer_topic");
         maxCustomers = options.get("max_customers");
@@ -110,6 +112,8 @@ public class EpochCustomerProducer {
             streams.close();
         }));
 
+        System.out.println("Produced = " + produced);
+
         streams.start();
     }
 
@@ -123,8 +127,8 @@ public class EpochCustomerProducer {
             producer.send(record);
             producer.flush();
 
-            // System.out.println("Produced " + record);
-
+            System.out.println("Produced " + record);
+            produced++;
         }
     }
 

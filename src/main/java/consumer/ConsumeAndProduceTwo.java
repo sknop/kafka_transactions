@@ -73,7 +73,7 @@ public class ConsumeAndProduceTwo {
 
             while(true) {
                 // ConsumerRecords<Integer, Customer> records = consumer.poll(duration);
-                ConsumerRecords<Integer, Customer> records = consumer.poll(100);
+                ConsumerRecords<Integer, Customer> records = consumer.poll(Duration.ofMillis(100));
                 for (ConsumerRecord<Integer, Customer> record : records) {
                     System.out.println("Found " + record.value());
 
