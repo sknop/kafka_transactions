@@ -14,7 +14,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.IntegerSerializer;
 import io.confluent.kafka.serializers.subject.RecordNameStrategy;
-import io.confluent.kafka.serializers.subject.TopicRecordNameStrategy;
+// import io.confluent.kafka.serializers.subject.TopicRecordNameStrategy;
 import schema.Customer;
 
 import java.io.IOException;
