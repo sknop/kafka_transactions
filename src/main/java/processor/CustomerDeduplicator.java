@@ -80,6 +80,7 @@ public class CustomerDeduplicator {
             customerStore = (KeyValueStore<K, V>) context.getStateStore("unique-customer-store");
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public KeyValue<K, V> transform(final K key, final V value) {
             KeyValue<K, V> output;

@@ -1,0 +1,15 @@
+{
+  "type" : "record",
+  "name" : "Counter",
+  "namespace" : "schema",
+  "fields" : [ {
+               "name" : "counterId",
+               "type" : "int",
+               "doc"  : "Identifier for reference"
+   }, {
+     "name" : "timestamp",
+     "type" : "long",
+     "doc"  : "Time the counter was created"
+   } ],
+     "doc:" : "Counter for compaction test"
+}
