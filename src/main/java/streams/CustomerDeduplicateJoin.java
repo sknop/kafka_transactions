@@ -82,7 +82,7 @@ public class CustomerDeduplicateJoin {
                 .leftJoin(uniqueCustomers, (customer, unique) -> {
                     Customer result = customer;
                     if (unique != null) {
-                        if (customer.getCustomerId().equals(unique.getCustomerId())) {
+                        if (customer.getCustomerId() == unique.getCustomerId()) {
                             result = unique;
                             result.setEpoch( result.getEpoch() + 1);
                         }

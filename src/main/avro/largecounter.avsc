@@ -1,0 +1,21 @@
+{
+  "type" : "record",
+  "name" : "LargeCounter",
+  "namespace" : "schema",
+  "fields" : [
+      {
+                   "name" : "counterId",
+                   "type" : { "type": "fixed", "size" : 16, "name" : "FixedIntern"},
+                   "logicalType" : "decimal",
+                   "scale" : 0,
+                   "precision" : 16,
+                   "doc"  : "Identifier for reference"
+       },
+       {
+         "name" : "timestamp",
+         "type" : "long",
+         "doc"  : "Time the counter was created"
+       }
+      ],
+   "doc:" : "Counter for compaction test"
+}
