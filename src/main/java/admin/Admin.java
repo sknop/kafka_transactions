@@ -6,14 +6,9 @@ import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
-import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.AdminClientConfig;
-import org.apache.kafka.clients.admin.TopicDescription;
+import org.apache.kafka.clients.admin.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 public class Admin {
@@ -40,39 +35,24 @@ public class Admin {
         }));
     }
 
-    public List<String> getTopics() {
+    public List<String> getTopics() throws InterruptedException, ExecutionException {
         var topics = client.listTopics();
 
         var listings = topics.namesToListings();
-        var result = new ArrayList<String>();
-
-        try {
-            result.addAll(listings.get().keySet());
-        } catch (InterruptedException e) {
-            System.err.println("I've been rudely interrupted");
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            System.err.println("Something went wrong");
-            e.printStackTrace();
-        }
-
-        return result;
+        return new ArrayList<>(listings.get().keySet());
     }
 
-    public Map<String,TopicDescription> getDescription(List<String> topics) {
+    public Map<String,TopicDescription> getDescription(List<String> topics) throws InterruptedException, ExecutionException {
         var descriptions = client.describeTopics(topics).all();
 
-        try {
-            return descriptions.get();
-        } catch (InterruptedException e) {
-            System.err.println("I've been rudely interrupted");
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            System.err.println("Something went wrong");
-            e.printStackTrace();
-        }
+        return descriptions.get();
+    }
 
-        return new HashMap<>();
+    public Config createTopic(String name, int numberOfPartitions, short replicationFactor) throws ExecutionException, InterruptedException {
+        var newTopic = new NewTopic(name, numberOfPartitions, replicationFactor);
+
+        var results = client.createTopics(Collections.singletonList(newTopic));
+        return results.config(name).get();
     }
 
     public static void main(String[] args) {
@@ -87,6 +67,17 @@ public class Admin {
                 .type(String.class)
                 .setDefault(SCHEMA_REGISTRY_URL)
                 .help(String.format("Schema registry URL(de fault %s)", SCHEMA_REGISTRY_URL));
+        parser.addArgument("-c","--create")
+                .type(String.class)
+                .help("Create a topic <name>");
+        parser.addArgument("-p","--partitions")
+                .type(Integer.class)
+                .setDefault(1)
+                .help("Topic number of partitions");
+        parser.addArgument("-r","--replication")
+                .type(Short.class)
+                .setDefault((short)1)
+                .help("Topic replication-factor");
         try {
             Namespace options = parser.parseArgs(args);
 
@@ -96,6 +87,15 @@ public class Admin {
             topics.forEach(System.out::println);
             var descriptions = admin.getDescription(topics);
             descriptions.values().forEach(System.out::println);
+
+            String topicToCreate = options.get("create");
+            if (topicToCreate != null) {
+                int partitions = options.get("partitions");
+                short replicationFactor = options.get("replication");
+
+                var config = admin.createTopic(topicToCreate, partitions, replicationFactor);
+                System.out.println(config);
+            }
 
         } catch (ArgumentParserException e) {
             System.err.println(e.getMessage());
