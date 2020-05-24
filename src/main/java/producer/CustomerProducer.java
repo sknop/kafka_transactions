@@ -15,6 +15,7 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.IntegerSerializer;
 import io.confluent.kafka.serializers.subject.RecordNameStrategy;
 // import io.confluent.kafka.serializers.subject.TopicRecordNameStrategy;
+import picocli.CommandLine;
 import schema.Customer;
 
 import java.io.IOException;
@@ -22,38 +23,53 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 import java.util.Random;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-public class CustomerProducer {
+@CommandLine.Command(name = "CustomerProducer", mixinStandardHelpOptions = true, version = "CustomerProducer 1.0",
+        description = "Produces Customer objects in Avro format, either a fixed amount or continuously.")
+public class CustomerProducer implements Callable<Integer> {
     final static String CUSTOMER_TOPIC = "customer";
     public static final String BOOTSTRAP_SERVERS = "localhost:9092";
     public static final String SCHEMA_REGISTRY_URL = "http://localhost:8081";
 
+    @CommandLine.Option(names = {"--customer-topic"},
+                        description = "Topic for the customer (default = ${DEFAULT-VALUE})",
+                        defaultValue = CUSTOMER_TOPIC)
     private String customerTopic;
-    private int maxCustomers;
-    private int largestCustomerId;
 
+    @CommandLine.Option(names = {"-m", "--max-customers"},
+        description = "Max numbers of users to generate/update (default = ${DEFAULT-VALUE}, keep going)")
+    private int maxCustomers = -1;
+
+    @CommandLine.Option(names = {"-l", "--largest-customerid"},
+                        description = "Highest customer ID to generate/update (default = ${DEFAULT-VALUE})")
+    private int largestCustomerId = 1000;
+
+    @CommandLine.Option(names = {"--bootstrap-servers"},
+            description = "Bootstrap Servers (default = ${DEFAULT-VALUE})",
+            defaultValue = BOOTSTRAP_SERVERS)
     private String bootstrapServers;
+
+    @CommandLine.Option(names = {"--schema-registry"},
+            description = "Schema Registry (default = ${DEFAULT-VALUE})",
+            defaultValue = SCHEMA_REGISTRY_URL)
     private String schemaRegistryURL;
 
-    private Random random = new Random();
-
+    @CommandLine.Option(names = {"-i", "--interactive"},
+                        description = "If enabled, will produce one event and wait for <Return>")
     private boolean interactive;
-    private boolean doProduce = true;
+
+    @CommandLine.Option(names = {"-v", "--verbose}"},
+            description = "If enabled, will print out every message created")
     private boolean verbose = false;
 
+    private boolean doProduce = true;
     private int produced = 0;
+    private Random random = new Random();
 
-    public CustomerProducer(Namespace options) {
-        customerTopic = options.get("customer_topic");
-        maxCustomers = options.get("max_customers");
-        largestCustomerId = options.get("largest_customerid");
-        bootstrapServers = options.get("bootstrap_servers");
-        schemaRegistryURL = options.get("schema_registry");
-        interactive = options.get("interactive");
-        verbose = options.get("verbose");
-    }
+    public CustomerProducer() {  }
 
     private KafkaProducer<Integer, Object> createProducer() {
         Properties properties = new Properties();
@@ -98,7 +114,16 @@ public class CustomerProducer {
         }
         else {
             for (int i = 0; i < maxCustomers; i++) {
-                doProduce(producer);
+                if (interactive) {
+                    System.out.println("Press return for next ...");
+                    doProduce(producer);
+
+                    try {
+                        int key = System.in.read();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
         }
 
@@ -113,9 +138,7 @@ public class CustomerProducer {
         try {
             RecordMetadata result = future.get();
             valueSize = result.serializedValueSize();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
 
@@ -155,51 +178,17 @@ public class CustomerProducer {
         return new ProducerRecord<>(customerTopic, customerId, customer);
     }
 
-    public static void main(String[] args) {
-        ArgumentParserBuilder builder = ArgumentParsers.newFor("CustomerProducer").addHelp(true);
+    @Override
+    public Integer call() {
+        produce();
 
-        ArgumentParser parser = builder.build();
-        parser.addArgument("-m", "--max-customers")
-                .setDefault(-1)
-                .type(Integer.class)
-                .help("Max numbers of users to generate/update (default = -1, keep going)");
-        parser.addArgument("-l", "--largest-customerid")
-                .setDefault(1000)
-                .type(Integer.class)
-                .help("Highest customer ID to generate/update");
-        parser.addArgument("--customer-topic")
-                .type(String.class)
-                .setDefault(CUSTOMER_TOPIC)
-                .help(String.format("Topic for the customer (default %s)",CUSTOMER_TOPIC));
-        parser.addArgument("--bootstrap-servers")
-                .type(String.class)
-                .setDefault(BOOTSTRAP_SERVERS)
-                .help(String.format("Kafka Bootstrap Servers(default %s)", BOOTSTRAP_SERVERS));
-        parser.addArgument("--schema-registry")
-                .type(String.class)
-                .setDefault(SCHEMA_REGISTRY_URL)
-                .help(String.format("Schema registry URL(de fault %s)", SCHEMA_REGISTRY_URL));
-        parser.addArgument("-i", "--interactive")
-                .action(Arguments.storeConst())
-                .setDefault(Boolean.FALSE)
-                .setConst(Boolean.TRUE)
-                .help("If enabled, will produce one event and wait for <Return>");
-        parser.addArgument("-v", "--verbose")
-                .action(Arguments.storeConst())
-                .setDefault(Boolean.FALSE)
-                .setConst(Boolean.TRUE)
-                .help("If enabled, will print out every message created");
+        return 0;
+    }
+
+    public static void main(String[] args) {
 
         try {
-            Namespace options = parser.parseArgs(args);
-
-            CustomerProducer producer = new CustomerProducer(options);
-            producer.produce();
-
-        } catch (ArgumentParserException e) {
-            System.err.println(e.getMessage());
-            System.err.println();
-            System.err.println(parser.formatHelp());
+            new CommandLine(new CustomerProducer()).execute(args);
         }
         catch (Exception e) {
             e.printStackTrace();

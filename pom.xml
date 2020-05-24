@@ -15,6 +15,7 @@
         <avro.version>1.9.2</avro.version>
         <slf4j.version>1.7.29</slf4j.version>
         <logback.version>1.2.3</logback.version>
+        <picocli.version>4.3.2</picocli.version>
         <!-- <nitrite.version>3.0.0</nitrite.version> -->
         <!-- Maven properties for compilation -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -60,6 +61,11 @@
             <version>${confluent.version}</version>
         </dependency>
         <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+            <version>${picocli.version}</version>
+        </dependency>
+        <dependency>
             <groupId>net.sourceforge.argparse4j</groupId>
             <artifactId>argparse4j</artifactId>
             <version>0.8.1</version>
@@ -90,6 +96,16 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                     <compilerArgument>-Xlint:unchecked</compilerArgument>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>info.picocli</groupId>
+                            <artifactId>picocli-codegen</artifactId>
+                            <version>${picocli.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                    <compilerArgs>
+                        <arg>-Aproject=${project.groupId}/${project.artifactId}</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
             <plugin>
