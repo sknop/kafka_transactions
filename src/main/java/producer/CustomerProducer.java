@@ -15,6 +15,7 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.IntegerSerializer;
 import io.confluent.kafka.serializers.subject.RecordNameStrategy;
 // import io.confluent.kafka.serializers.subject.TopicRecordNameStrategy;
+import org.jline.terminal.TerminalBuilder;
 import picocli.CommandLine;
 import schema.Customer;
 
@@ -27,16 +28,26 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-@CommandLine.Command(name = "CustomerProducer", mixinStandardHelpOptions = true, version = "CustomerProducer 1.0",
-        description = "Produces Customer objects in Avro format, either a fixed amount or continuously.")
+@CommandLine.Command(name = "CustomerProducer",
+        mixinStandardHelpOptions = true,
+        version = "CustomerProducer 1.0",
+        description = "Produces Customer objects in Avro format, either a fixed amount or continuously.",
+        sortOptions = false)
 public class CustomerProducer implements Callable<Integer> {
-    final static String CUSTOMER_TOPIC = "customer";
-    public static final String BOOTSTRAP_SERVERS = "localhost:9092";
-    public static final String SCHEMA_REGISTRY_URL = "http://localhost:8081";
+
+    @CommandLine.Option(names = {"--bootstrap-servers"},
+            description = "Bootstrap Servers (default = ${DEFAULT-VALUE})",
+            defaultValue = "localhost:9092")
+    private String bootstrapServers;
+
+    @CommandLine.Option(names = {"--schema-registry"},
+            description = "Schema Registry (default = ${DEFAULT-VALUE})",
+            defaultValue = "http://localhost:8081")
+    private String schemaRegistryURL;
 
     @CommandLine.Option(names = {"--customer-topic"},
                         description = "Topic for the customer (default = ${DEFAULT-VALUE})",
-                        defaultValue = CUSTOMER_TOPIC)
+                        defaultValue = "customer")
     private String customerTopic;
 
     @CommandLine.Option(names = {"-m", "--max-customers"},
@@ -47,21 +58,11 @@ public class CustomerProducer implements Callable<Integer> {
                         description = "Highest customer ID to generate/update (default = ${DEFAULT-VALUE})")
     private int largestCustomerId = 1000;
 
-    @CommandLine.Option(names = {"--bootstrap-servers"},
-            description = "Bootstrap Servers (default = ${DEFAULT-VALUE})",
-            defaultValue = BOOTSTRAP_SERVERS)
-    private String bootstrapServers;
-
-    @CommandLine.Option(names = {"--schema-registry"},
-            description = "Schema Registry (default = ${DEFAULT-VALUE})",
-            defaultValue = SCHEMA_REGISTRY_URL)
-    private String schemaRegistryURL;
-
     @CommandLine.Option(names = {"-i", "--interactive"},
                         description = "If enabled, will produce one event and wait for <Return>")
     private boolean interactive;
 
-    @CommandLine.Option(names = {"-v", "--verbose}"},
+    @CommandLine.Option(names = {"-v", "--verbose"},
             description = "If enabled, will print out every message created")
     private boolean verbose = false;
 
@@ -88,7 +89,7 @@ public class CustomerProducer implements Callable<Integer> {
         return new KafkaProducer<>(properties);
     }
 
-    private void produce() {
+    private void produce() throws IOException {
         KafkaProducer<Integer, Object> producer = createProducer();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -97,32 +98,28 @@ public class CustomerProducer implements Callable<Integer> {
             producer.close();
         }));
 
+        var terminal = TerminalBuilder.terminal();
+        terminal.enterRawMode();
+        var reader = terminal.reader();
+
         if (maxCustomers == -1) {
             while (doProduce) {
                 doProduce(producer);
 
                 if (interactive) {
-                    System.out.println("Press return for next ...");
+                    System.out.println("Press any key to continue ...");
 
-                    try {
-                        int key = System.in.read();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    var c = reader.read();
                 }
             }
         }
         else {
             for (int i = 0; i < maxCustomers; i++) {
                 if (interactive) {
-                    System.out.println("Press return for next ...");
+                    System.out.println("Press any key to continue ...");
                     doProduce(producer);
 
-                    try {
-                        int key = System.in.read();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    var c = reader.read();
                 }
             }
         }
@@ -179,7 +176,7 @@ public class CustomerProducer implements Callable<Integer> {
     }
 
     @Override
-    public Integer call() {
+    public Integer call() throws Exception {
         produce();
 
         return 0;

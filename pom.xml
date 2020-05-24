@@ -16,6 +16,7 @@
         <slf4j.version>1.7.29</slf4j.version>
         <logback.version>1.2.3</logback.version>
         <picocli.version>4.3.2</picocli.version>
+        <jline.version>3.14.1</jline.version>
         <!-- <nitrite.version>3.0.0</nitrite.version> -->
         <!-- Maven properties for compilation -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -69,6 +70,11 @@
             <groupId>net.sourceforge.argparse4j</groupId>
             <artifactId>argparse4j</artifactId>
             <version>0.8.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jline</groupId>
+            <artifactId>jline</artifactId>
+            <version>${jline.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
