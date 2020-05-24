@@ -64,8 +64,6 @@ public class CounterProducer {
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
         properties.put(ProducerConfig.ACKS_CONFIG, "all");
         properties.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryURL);
-        properties.put(KafkaAvroSerializerConfig.KEY_SUBJECT_NAME_STRATEGY, RecordNameStrategy.class);
-        properties.put(KafkaAvroSerializerConfig.VALUE_SUBJECT_NAME_STRATEGY, RecordNameStrategy.class);
 
         properties.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG,
                 "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor");
