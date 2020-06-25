@@ -19,7 +19,7 @@ import org.jline.terminal.TerminalBuilder;
 import picocli.CommandLine;
 import schema.Customer;
 
-import java.io.IOException;
+import java.io.*;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
@@ -62,6 +62,10 @@ public class CustomerProducer implements Callable<Integer> {
                         description = "If enabled, will produce one event and wait for <Return>")
     private boolean interactive;
 
+    @CommandLine.Option(names = {"-c", "--config-file"},
+                        description = "If provided, content will be added to the properties")
+    private String configFile = null;
+
     @CommandLine.Option(names = {"-v", "--verbose"},
             description = "If enabled, will print out every message created")
     private boolean verbose = false;
@@ -74,18 +78,38 @@ public class CustomerProducer implements Callable<Integer> {
 
     private KafkaProducer<Integer, Object> createProducer() {
         Properties properties = new Properties();
+
+        if (configFile != null) {
+            try (InputStream inputStream = new FileInputStream(configFile)) {
+                Reader reader = new InputStreamReader(inputStream);
+
+                properties.load(reader);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                System.err.println("Inputfile " + configFile + " not found");
+                System.exit(1);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
         properties.put(ProducerConfig.ACKS_CONFIG, "all");
         properties.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryURL);
+//        properties.put(KafkaAvroSerializerConfig.AUTO_REGISTER_SCHEMAS,false);
+
+//        properties.put(KafkaAvroSerializerConfig.USER_INFO_CONFIG,"alice:alice-secret");
+//        properties.put(KafkaAvroSerializerConfig.BASIC_AUTH_CREDENTIALS_SOURCE,"USER_INFO");
 
         properties.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG,
                 "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor");
-        // properties.put("confluent.monitoring.interceptor.bootstrap.servers", bootstrapServers);
-        // properties.put("confluent.monitoring.interceptor.timeout.ms", 3000);
-        // properties.put("confluent.monitoring.interceptor.publishMs", 10000);
+        properties.put("confluent.monitoring.interceptor.bootstrap.servers", bootstrapServers);
+        properties.put("confluent.monitoring.interceptor.timeout.ms", 3000);
+        properties.put("confluent.monitoring.interceptor.publishMs", 10000);
 
+        // properties.load(Reader.nullReader())
         return new KafkaProducer<>(properties);
     }
 
@@ -115,9 +139,9 @@ public class CustomerProducer implements Callable<Integer> {
         }
         else {
             for (int i = 0; i < maxCustomers; i++) {
+                doProduce(producer);
                 if (interactive) {
                     System.out.println("Press any key to continue ...");
-                    doProduce(producer);
 
                     var c = reader.read();
                 }

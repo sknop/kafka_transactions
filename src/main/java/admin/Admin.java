@@ -8,6 +8,7 @@ import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.kafka.clients.admin.*;
 
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
@@ -17,17 +18,34 @@ public class Admin {
 
     private String bootstrapServers;
     private String schemaRegistryURL;
+    private String configFile;
 
     private AdminClient client;
 
     public Admin(Namespace options) {
+        Properties properties = new Properties();
+
         bootstrapServers = options.get("bootstrap_servers");
         schemaRegistryURL = options.get("schema_registry");
+        configFile = options.get("config_file");
 
-        Map<String, Object> conf = new HashMap<>();
-        conf.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        if (configFile != null) {
+            try (InputStream inputStream = new FileInputStream(configFile)) {
+                Reader reader = new InputStreamReader(inputStream);
 
-        client = AdminClient.create(conf);
+                properties.load(reader);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                System.err.println("Inputfile " + configFile + " not found");
+                System.exit(1);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        properties.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+
+        client = AdminClient.create(properties);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("Shutting down gracefully ...");
@@ -59,6 +77,9 @@ public class Admin {
         ArgumentParserBuilder builder = ArgumentParsers.newFor("Admin").addHelp(true);
 
         ArgumentParser parser = builder.build();
+        parser.addArgument("--config-file")
+                .type(String.class)
+                .help("Config file for authentication, for example");
         parser.addArgument("--bootstrap-servers")
                 .type(String.class)
                 .setDefault(BOOTSTRAP_SERVERS)
