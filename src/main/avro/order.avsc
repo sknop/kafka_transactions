@@ -14,6 +14,11 @@
        "name" : "customerId",
        "type" : "string",
        "doc"  : "Customer id for the order"
-  } ],
+  }, {
+             "name" : "orderAmount",
+             "type" : "int",
+             "doc"  : "Number of items",
+             "default" : 1
+  }  ],
    "doc:" : "Order Header"
 }
