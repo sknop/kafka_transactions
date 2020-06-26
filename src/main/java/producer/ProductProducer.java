@@ -146,9 +146,9 @@ public class ProductProducer {
       int productId = random.nextInt(largestCustomerId) + 1;
 
       String productName = "product_" + productId;
-      float price = 2.3f;
+      String description = "description_" + productId;
 
-      Product product = new Product(productId, productName, price);
+      Product product = new Product(productId, productName, description);
 
       return new ProducerRecord<>(customerTopic, productId, product);
     }

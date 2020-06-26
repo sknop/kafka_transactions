@@ -2,17 +2,18 @@
   "type" : "record",
   "name" : "Product",
   "namespace" : "schema",
-  "fields" : [ {
+  "fields" : [
+  {
                "name" : "productId",
                "type" : "int",
                "doc"  : "Identifier for reference"
-   }, {
+  }, {
       "name" : "name",
       "type" : "string",
       "doc"  : "Name of the product"
   }, {
-     "name" : "price",
-     "type" : "float",
+     "name" : "description",
+     "type" : "string",
      "doc"  : "Price per unit"
    } ],
      "doc:" : "Product that can be ordered"
