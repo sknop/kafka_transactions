@@ -1,0 +1,22 @@
+{
+  "type" : "record",
+  "name" : "PricePoint",
+  "namespace" : "schema",
+  "fields" : [
+      {
+        "name" : "productId",
+        "type" : "int",
+        "doc"  : "Identifier for reference"
+      }, {
+        "name" : "price",
+        "type" : "float",
+        "doc"  : "Current price of the product"
+      }, {
+        "name" : "date",
+        "type" : "long",
+        "logicalType" : "timestamp-millis",
+        "doc"  : "Timestamp when the price changed"
+       }
+    ],
+  "doc:" : "Price point of an object with time when the price changed"
+}
