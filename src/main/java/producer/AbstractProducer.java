@@ -87,7 +87,7 @@ public abstract class AbstractProducer {
         properties.put("confluent.monitoring.interceptor.timeout.ms", 3000);
         properties.put("confluent.monitoring.interceptor.publishMs", 10000);
 
-        addProducerProperties();
+        addProducerProperties(properties);
 
         return new KafkaProducer<>(properties);
     }
@@ -151,7 +151,7 @@ public abstract class AbstractProducer {
 
     // Need to override these in the concrete Producer
 
-    protected abstract void addProducerProperties();
+    protected abstract void addProducerProperties(Properties properties);
 
     protected abstract ProducerRecord<Integer, Object> createRecord();
 

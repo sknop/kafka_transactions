@@ -11,6 +11,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 
@@ -38,8 +39,7 @@ public class GenericOrderProducer extends AbstractProducer implements Callable<I
     }
 
     @Override
-    protected void addProducerProperties() {
-
+    protected void addProducerProperties(Properties properties) {
     }
 
     @Override

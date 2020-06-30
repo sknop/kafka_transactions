@@ -6,6 +6,7 @@ import schema.Customer;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "CustomerProducer",
@@ -21,8 +22,7 @@ public class CustomerProducer extends AbstractProducer implements Callable<Integ
 
 
     @Override
-    protected void addProducerProperties() {
-
+    protected void addProducerProperties(Properties properties) {
     }
 
     @Override

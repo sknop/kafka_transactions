@@ -7,6 +7,7 @@ import schema.PricePoint;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -23,7 +24,7 @@ public class PricePointProducer extends AbstractProducer implements Callable<Int
 
 
     @Override
-    protected void addProducerProperties() {
+    protected void addProducerProperties(Properties properties) {
     }
 
     @Override
