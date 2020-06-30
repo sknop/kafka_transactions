@@ -2,34 +2,33 @@ package streams;
 
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.KStream;
+import org.apache.kafka.streams.kstream.KTable;
+import org.apache.kafka.streams.kstream.Materialized;
+import org.apache.kafka.streams.state.KeyValueStore;
 import picocli.CommandLine;
-import schema.Customer;
+import schema.PricePoint;
 
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
-@CommandLine.Command(name = "CustomerStream",
-        version = "CustomerStream 1.0",
-        description = "Reads Customer objects in Avro format from a stream.")
-public class CustomerStream extends AbstreamStream implements Callable<Integer> {
-    final static String CUSTOMER_TOPIC = "customer";
+@CommandLine.Command(name = "PricePointStream",
+        version = "PricePointStream 1.0",
+        description = "Reads PricePoints and prints them.")
+public class PricePointStream extends AbstreamStream implements Callable<Integer> {
+    final static String PRICEPOINT_TOPIC = "pricepoint";
     final static String BOOTSTRAP_SERVERS = "localhost:9092";
     final static String SCHEMA_REGISTRY_URL = "http://localhost:8081";
 
     @CommandLine.Option(names = {"--topic"},
             description = "Topic for the object (default = ${DEFAULT-VALUE})")
-    private String customerTopic = CUSTOMER_TOPIC;
+    private String topic = PRICEPOINT_TOPIC;
 
-    public CustomerStream() {
-    }
-
-    @Override
-    protected String getApplicationName() {
-        return "customer-stream";
+    public PricePointStream() {
     }
 
     @Override
@@ -38,21 +37,21 @@ public class CustomerStream extends AbstreamStream implements Callable<Integer> 
         properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
     }
 
+    @Override
+    protected String getApplicationName() {
+        return "price-point-stream";
+    }
+
     private void consume() {
         StreamsBuilder builder = new StreamsBuilder();
+        var integerSerde = Serdes.Integer();
+        var specificSerde = new SpecificAvroSerde<PricePoint>();
 
-//        String rewardsStateStoreName = "rewardsPointsStore";
-//
-//        KeyValueBytesStoreSupplier storeSupplier =
-//                Stores.inMemoryKeyValueStore(rewardsStateStoreName); // 1
-//        builder.addStateStore(
-//                Stores.keyValueStoreBuilder(storeSupplier, Serdes.String(), Serdes.Integer())); // 2
-//
-        // KTable<Integer, Customer> existingCustomers = builder.table(customerTopic);
-        KStream<Integer, Customer> existingCustomers = builder.stream(customerTopic);
+
+        KStream<Integer, PricePoint> pricePoints = builder.stream(topic);
 
         if (verbose)
-            existingCustomers.foreach((key, value) -> System.out.println(key + " => " + value));
+            pricePoints.foreach((key, value) -> System.out.println(key + " => " + value));
 
         KafkaStreams streams = createStreams(builder.build());
         streams.setStateListener((newState, oldState) -> System.out.println("*** Changed state from " +oldState + " to " + newState));
@@ -72,7 +71,7 @@ public class CustomerStream extends AbstreamStream implements Callable<Integer> 
 
     public static void main(String[] args) {
         try {
-            new CommandLine(new CustomerStream()).execute(args);
+            new CommandLine(new PricePointStream()).execute(args);
         }
         catch (Exception e) {
             e.printStackTrace();

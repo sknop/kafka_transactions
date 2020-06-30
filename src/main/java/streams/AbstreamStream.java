@@ -62,8 +62,8 @@ public abstract class AbstreamStream {
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
         // Specify default (de)serializers for record keys and for record values.
-        properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
-        properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
+//        properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
+//        properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
 
         // properties.put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, StreamsConfig.EXACTLY_ONCE);
 
@@ -73,11 +73,15 @@ public abstract class AbstreamStream {
                 "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor");
         properties.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
         properties.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 100);
-        properties.put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG,
-                LogAndContinueExceptionHandler.class.getName());
+//        properties.put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG,
+//                LogAndContinueExceptionHandler.class.getName());
+
+        addConsumerProperties(properties);
 
         return new KafkaStreams(topology, properties);
     }
+
+    protected abstract void addConsumerProperties(Properties properties);
 
     protected abstract String getApplicationName();
 
