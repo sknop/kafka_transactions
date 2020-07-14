@@ -41,14 +41,6 @@ public class CustomerStream extends AbstreamStream implements Callable<Integer> 
     private void consume() {
         StreamsBuilder builder = new StreamsBuilder();
 
-//        String rewardsStateStoreName = "rewardsPointsStore";
-//
-//        KeyValueBytesStoreSupplier storeSupplier =
-//                Stores.inMemoryKeyValueStore(rewardsStateStoreName); // 1
-//        builder.addStateStore(
-//                Stores.keyValueStoreBuilder(storeSupplier, Serdes.String(), Serdes.Integer())); // 2
-//
-        // KTable<Integer, Customer> existingCustomers = builder.table(customerTopic);
         KStream<Integer, Customer> existingCustomers = builder.stream(customerTopic);
 
         if (verbose)
