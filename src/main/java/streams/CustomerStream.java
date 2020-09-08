@@ -17,8 +17,6 @@ import java.util.concurrent.Callable;
         description = "Reads Customer objects in Avro format from a stream.")
 public class CustomerStream extends AbstreamStream implements Callable<Integer> {
     final static String CUSTOMER_TOPIC = "customer";
-    final static String BOOTSTRAP_SERVERS = "localhost:9092";
-    final static String SCHEMA_REGISTRY_URL = "http://localhost:8081";
 
     @CommandLine.Option(names = {"--topic"},
             description = "Topic for the object (default = ${DEFAULT-VALUE})")
