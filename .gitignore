@@ -2,3 +2,4 @@
 .java-version
 target/
 src/main/java/schema
+configs/
