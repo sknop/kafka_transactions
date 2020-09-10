@@ -24,14 +24,13 @@ import java.util.concurrent.Future;
         mixinStandardHelpOptions = true,
         sortOptions = false)
 public abstract class AbstractProducer {
-    @CommandLine.Option(names = {"--bootstrap-servers"},
-            description = "Bootstrap Servers (default = ${DEFAULT-VALUE})",
-            defaultValue = "localhost:9092")
+    private static final String DEFAULT_BOOTSTRAP_SERVERS = "localhost:9092";
+    private static final String DEFAULT_SCHEMA_REGISTRY =  "http://localhost:8081";
+
+    @CommandLine.Option(names = {"--bootstrap-servers"})
     protected String bootstrapServers;
 
-    @CommandLine.Option(names = {"--schema-registry"},
-            description = "Schema Registry (default = ${DEFAULT-VALUE})",
-            defaultValue = "http://localhost:8081")
+    @CommandLine.Option(names = {"--schema-registry"})
     protected String schemaRegistryURL;
 
     @CommandLine.Option(names = {"-m", "--max"},
@@ -54,6 +53,10 @@ public abstract class AbstractProducer {
             description = "If enabled, will print out every message created")
     protected boolean verbose = false;
 
+    @CommandLine.Option(names = {"--enable-monitoring-interceptor"},
+            description = "Enable MonitoringInterceptors (for Control Center)")
+    protected boolean monitoringInterceptors = false;
+
     protected boolean doProduce = true;
     protected int produced = 0;
     protected Random random = new Random();
@@ -61,25 +64,14 @@ public abstract class AbstractProducer {
     private KafkaProducer<Integer, Object> createProducer() {
         Properties properties = new Properties();
 
-        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, DEFAULT_BOOTSTRAP_SERVERS);
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
         properties.put(ProducerConfig.ACKS_CONFIG, "all");
         properties.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
-        properties.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryURL);
-
-        properties.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG,
-                "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor");
-        properties.put("confluent.monitoring.interceptor.bootstrap.servers", bootstrapServers);
-        properties.put("confluent.monitoring.interceptor.timeout.ms", 3000);
-        properties.put("confluent.monitoring.interceptor.publishMs", 10000);
+        properties.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, DEFAULT_SCHEMA_REGISTRY);
 
         addProducerProperties(properties);
-
-        // TODO will override settings just defined - needs to be improved by
-        //   - setting defaults first
-        //   - overriding these defaults from the config file
-        //   - but still let user override the config file from the command line
 
         if (configFile != null) {
             try (InputStream inputStream = new FileInputStream(configFile)) {
@@ -93,6 +85,21 @@ public abstract class AbstractProducer {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+
+        if (bootstrapServers != null) {
+            properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        }
+        if (schemaRegistryURL != null) {
+            properties.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryURL);
+        }
+
+        if (monitoringInterceptors) {
+            properties.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG,
+                    "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor");
+            properties.put("confluent.monitoring.interceptor.bootstrap.servers", properties.get(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG));
+            properties.put("confluent.monitoring.interceptor.timeout.ms", 3000);
+            properties.put("confluent.monitoring.interceptor.publishMs", 10000);
         }
 
         return new KafkaProducer<>(properties);
