@@ -61,20 +61,6 @@ public abstract class AbstractProducer {
     private KafkaProducer<Integer, Object> createProducer() {
         Properties properties = new Properties();
 
-        if (configFile != null) {
-            try (InputStream inputStream = new FileInputStream(configFile)) {
-                Reader reader = new InputStreamReader(inputStream);
-
-                properties.load(reader);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                System.err.println("Inputfile " + configFile + " not found");
-                System.exit(1);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
@@ -89,6 +75,25 @@ public abstract class AbstractProducer {
         properties.put("confluent.monitoring.interceptor.publishMs", 10000);
 
         addProducerProperties(properties);
+
+        // TODO will override settings just defined - needs to be improved by
+        //   - setting defaults first
+        //   - overriding these defaults from the config file
+        //   - but still let user override the config file from the command line
+
+        if (configFile != null) {
+            try (InputStream inputStream = new FileInputStream(configFile)) {
+                Reader reader = new InputStreamReader(inputStream);
+
+                properties.load(reader);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                System.err.println("Inputfile " + configFile + " not found");
+                System.exit(1);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
         return new KafkaProducer<>(properties);
     }
