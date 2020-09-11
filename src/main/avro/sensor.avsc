@@ -1,0 +1,23 @@
+{
+  "namespace": "schema",
+  "type": "record",
+  "name": "SensorData",
+  "doc": "Sensor data of different types",
+  "fields" : [
+    {
+          "name" : "id",
+          "type" : "int",
+          "doc"  : "Id of the sensor"
+    },
+    {
+          "name" : "sensorTime",
+          "type" : "string",
+          "doc"  : "Time of the sensor to measure clock drift (as a string)"
+    },
+    {
+        "name" : "value",
+        "type" : [ "int", "float", "boolean", "string" ],
+        "doc"  : "The value of the sensor measurement"
+    }
+  ]
+}
