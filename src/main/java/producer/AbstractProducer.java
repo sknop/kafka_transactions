@@ -137,6 +137,8 @@ public abstract class AbstractProducer {
 
                     var c = reader.read();
                 }
+                if (!doProduce)
+                    break;
             }
         }
 
