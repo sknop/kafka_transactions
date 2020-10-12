@@ -1,0 +1,17 @@
+{
+  "type" : "record",
+  "name" : "Suit",
+  "namespace" : "schema",
+  "fields" : [
+    {
+        "name" : "suit",
+        "type" : {
+          "type": "enum",
+          "name": "Suit",
+          "symbols" : ["SPADES", "CLUBS", "HEARTS", "DIAMONDS"],
+          "namespace" : "schema.enums"
+        }
+    }
+    ],
+     "doc:" : "Playing card suit"
+}
