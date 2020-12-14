@@ -1,0 +1,15 @@
+{
+  "type" : "record",
+  "name" : "HexString",
+  "namespace" : "schema",
+  "fields" : [ {
+               "name" : "id",
+               "type" : "string",
+               "doc"  : "Hex Key"
+   }, {
+             "name" : "payload",
+             "type" : "string",
+             "doc"  : "Identifier as String"
+   } ],
+     "doc:" : "HexString for binary -> hex string test"
+}

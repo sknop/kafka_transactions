@@ -1,0 +1,15 @@
+{
+  "type" : "record",
+  "name" : "Binary",
+  "namespace" : "schema",
+  "fields" : [ {
+               "name" : "id",
+               "type" : "bytes",
+               "doc"  : "Binary Key"
+   }, {
+             "name" : "payload",
+             "type" : "string",
+             "doc"  : "Identifier as String"
+   } ],
+     "doc:" : "Binary for binary -> hex string test"
+}
