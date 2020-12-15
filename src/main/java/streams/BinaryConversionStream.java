@@ -52,9 +52,9 @@ public class BinaryConversionStream extends AbstreamStream implements Callable<I
 
     private void consume() {
         var specificAvroSerde = new SpecificAvroSerde<HexString>();
+        var serdeConfig = new HashMap<String, String>();
 
-        final Map<String, String> serdeConfig = Collections.singletonMap("schema.registry.url", "http://localhost:8081");
-
+        properties.forEach((key,value) -> serdeConfig.put(key.toString(), value.toString()));
         specificAvroSerde.configure(serdeConfig, false);
 
         StreamsBuilder builder = new StreamsBuilder();

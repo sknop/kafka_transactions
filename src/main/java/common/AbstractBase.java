@@ -3,7 +3,7 @@ package common;
 import java.io.*;
 import java.util.Properties;
 
-public class AbstractBase {
+abstract public class AbstractBase {
     protected static final String DEFAULT_BOOTSTRAP_SERVERS = "localhost:9092";
     protected static final String DEFAULT_SCHEMA_REGISTRY =  "http://localhost:8081";
 
@@ -24,4 +24,6 @@ public class AbstractBase {
             }
         }
     }
+
+    abstract protected void createProperties();
 }

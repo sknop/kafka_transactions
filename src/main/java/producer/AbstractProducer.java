@@ -60,7 +60,12 @@ public abstract class AbstractProducer extends AbstractBase {
     protected int produced = 0;
     protected Random random = new Random();
 
-    private KafkaProducer<Integer, Object> createProducer() {
+    public AbstractProducer() {
+        createProperties();
+    }
+
+    @Override
+    protected void createProperties() {
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, DEFAULT_BOOTSTRAP_SERVERS);
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
@@ -85,8 +90,9 @@ public abstract class AbstractProducer extends AbstractBase {
             properties.put("confluent.monitoring.interceptor.bootstrap.servers", properties.get(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG));
             properties.put("confluent.monitoring.interceptor.timeout.ms", 3000);
             properties.put("confluent.monitoring.interceptor.publishMs", 10000);
-        }
+        }   }
 
+    private KafkaProducer<Integer, Object> createProducer() {
         return new KafkaProducer<>(properties);
     }
 

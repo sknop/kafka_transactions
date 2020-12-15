@@ -38,7 +38,12 @@ public abstract class AbstreamStream extends AbstractBase {
             description = "Enable MonitoringInterceptors (for Control Center)")
     protected boolean monitoringInterceptors = false;
 
-    protected KafkaStreams createStreams(Topology topology) {
+    public AbstreamStream() {
+        createProperties();
+    }
+
+    @Override
+    protected void createProperties() {
         properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, DEFAULT_BOOTSTRAP_SERVERS);
         properties.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, DEFAULT_SCHEMA_REGISTRY);
 
@@ -72,7 +77,9 @@ public abstract class AbstreamStream extends AbstractBase {
         //                LogAndContinueExceptionHandler.class.getName());
 
         addConsumerProperties(properties);
+    }
 
+    protected KafkaStreams createStreams(Topology topology) {
         return new KafkaStreams(topology, properties);
     }
 
