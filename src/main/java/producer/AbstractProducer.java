@@ -1,5 +1,6 @@
 package producer;
 
+import common.AbstractBase;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -23,9 +24,7 @@ import java.util.concurrent.Future;
         optionListHeading    = "%nOptions:%n%n",
         mixinStandardHelpOptions = true,
         sortOptions = false)
-public abstract class AbstractProducer {
-    private static final String DEFAULT_BOOTSTRAP_SERVERS = "localhost:9092";
-    private static final String DEFAULT_SCHEMA_REGISTRY =  "http://localhost:8081";
+public abstract class AbstractProducer extends AbstractBase {
 
     @CommandLine.Option(names = {"--bootstrap-servers"})
     protected String bootstrapServers;
@@ -62,8 +61,6 @@ public abstract class AbstractProducer {
     protected Random random = new Random();
 
     private KafkaProducer<Integer, Object> createProducer() {
-        Properties properties = new Properties();
-
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, DEFAULT_BOOTSTRAP_SERVERS);
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
@@ -73,19 +70,7 @@ public abstract class AbstractProducer {
 
         addProducerProperties(properties);
 
-        if (configFile != null) {
-            try (InputStream inputStream = new FileInputStream(configFile)) {
-                Reader reader = new InputStreamReader(inputStream);
-
-                properties.load(reader);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                System.err.println("Inputfile " + configFile + " not found");
-                System.exit(1);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        readConfigFile(properties, configFile);
 
         if (bootstrapServers != null) {
             properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);

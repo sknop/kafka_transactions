@@ -1,5 +1,6 @@
 package streams;
 
+import common.AbstractBase;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.streams.KafkaStreams;
@@ -7,7 +8,6 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
 import picocli.CommandLine;
 
-import java.io.*;
 import java.util.Properties;
 
 @CommandLine.Command(
@@ -17,10 +17,7 @@ import java.util.Properties;
         optionListHeading    = "%nOptions:%n%n",
         mixinStandardHelpOptions = true,
         sortOptions = false)
-public abstract class AbstreamStream {
-    private static final String DEFAULT_BOOTSTRAP_SERVERS = "localhost:9092";
-    private static final String DEFAULT_SCHEMA_REGISTRY =  "http://localhost:8081";
-
+public abstract class AbstreamStream extends AbstractBase {
     @CommandLine.Option(names = {"--bootstrap-servers"},
             description = "Bootstrap Servers (default = ${DEFAULT-VALUE})")
     protected String bootstrapServers;
@@ -42,24 +39,10 @@ public abstract class AbstreamStream {
     protected boolean monitoringInterceptors = false;
 
     protected KafkaStreams createStreams(Topology topology) {
-        Properties properties = new Properties();
-
         properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, DEFAULT_BOOTSTRAP_SERVERS);
         properties.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, DEFAULT_SCHEMA_REGISTRY);
 
-        if (configFile != null) {
-            try (InputStream inputStream = new FileInputStream(configFile)) {
-                Reader reader = new InputStreamReader(inputStream);
-
-                properties.load(reader);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                System.err.println("Inputfile " + configFile + " not found");
-                System.exit(1);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        AbstractBase.readConfigFile(properties, configFile);
 
         properties.put(StreamsConfig.APPLICATION_ID_CONFIG, getApplicationName());
         if (bootstrapServers != null) {
