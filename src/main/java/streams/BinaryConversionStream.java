@@ -76,17 +76,10 @@ public class BinaryConversionStream extends AbstreamStream implements Callable<I
         Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
     }
 
-    private HexString convertFromBinary(Binary binary) {
-        ByteBuffer id = binary.getId();
-        BigInteger value = new BigInteger(id.array());
-
-        return new HexString(value.toString(16), binary.getPayload());
-    }
-
     private KeyValue<String, HexString> convertKeyValuefromBinary(Binary binary) {
         ByteBuffer id = binary.getId();
         BigInteger value = new BigInteger(id.array());
-        String key = value.toString(16);
+        String key = value.toString(16).toUpperCase();
 
         return new KeyValue<>(key, new HexString(key, binary.getPayload()));
     }
