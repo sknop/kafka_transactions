@@ -16,7 +16,7 @@
      "doc"  : "Number of Units"
    }, {
       "name" : "price",
-      "type" : "float",
+      "type" : "double",
       "doc"  : "Price per Unit (at sales time)"
     }  ],
    "doc:" : "Individual order item (N-M table order/product)"

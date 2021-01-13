@@ -29,10 +29,10 @@ public class OrderItemProducer extends AbstractProducer implements Callable<Inte
 
     @Override
     protected ProducerRecord<Integer,Object> createRecord() {
-        int productId = random.nextInt(100);
-        int orderId = random.nextInt(100000);
-        int count = random.nextInt(10) + 1;
-        float price = (float) (Math.round(random.nextDouble() * 100.0 * 100.0) / 100.0);
+        var productId = random.nextInt(100);
+        var orderId = random.nextInt(100000);
+        var count = random.nextInt(10) + 1;
+        var price = (Math.round(random.nextDouble() * 100.0 * 100.0) / 100.0);
 
         OrderItem orderItem = new OrderItem(productId, orderId, count, price);
 
