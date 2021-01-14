@@ -61,7 +61,6 @@ public abstract class AbstractProducer extends AbstractBase {
     protected Random random = new Random();
 
     public AbstractProducer() {
-        createProperties();
     }
 
     @Override
@@ -69,7 +68,6 @@ public abstract class AbstractProducer extends AbstractBase {
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, DEFAULT_BOOTSTRAP_SERVERS);
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
-        properties.put(ProducerConfig.ACKS_CONFIG, "all");
         properties.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
         properties.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, DEFAULT_SCHEMA_REGISTRY);
 
@@ -90,13 +88,17 @@ public abstract class AbstractProducer extends AbstractBase {
             properties.put("confluent.monitoring.interceptor.bootstrap.servers", properties.get(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG));
             properties.put("confluent.monitoring.interceptor.timeout.ms", 3000);
             properties.put("confluent.monitoring.interceptor.publishMs", 10000);
-        }   }
+        }
+    }
 
     private KafkaProducer<Integer, Object> createProducer() {
+        System.out.println("Using properties " + properties);
         return new KafkaProducer<>(properties);
     }
 
     protected final void produce() throws IOException {
+        createProperties();
+
         KafkaProducer<Integer, Object> producer = createProducer();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -109,14 +111,15 @@ public abstract class AbstractProducer extends AbstractBase {
         terminal.enterRawMode();
         var reader = terminal.reader();
 
+        int c = 0;
         if (maxObjects == -1) {
-            while (doProduce) {
+            while (doProduce && c != 'q') {
                 doProduce(producer);
 
                 if (interactive) {
-                    System.out.println("Press any key to continue ...");
+                    System.out.println("Press any key to continue ...(or 'q' to quit)");
 
-                    var c = reader.read();
+                    c = reader.read();
                 }
             }
         }
@@ -124,11 +127,11 @@ public abstract class AbstractProducer extends AbstractBase {
             for (int i = 0; i < maxObjects; i++) {
                 doProduce(producer);
                 if (interactive) {
-                    System.out.println("Press any key to continue ...");
+                    System.out.println("Press any key to continue ... (or 'q' to quit)");
 
-                    var c = reader.read();
+                    c = reader.read();
                 }
-                if (!doProduce)
+                if (!doProduce || c == 'q')
                     break;
             }
         }

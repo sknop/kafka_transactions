@@ -39,7 +39,6 @@ public abstract class AbstreamStream extends AbstractBase {
     protected boolean monitoringInterceptors = false;
 
     public AbstreamStream() {
-        createProperties();
     }
 
     @Override
@@ -80,6 +79,8 @@ public abstract class AbstreamStream extends AbstractBase {
     }
 
     protected KafkaStreams createStreams(Topology topology) {
+        createProperties();
+
         return new KafkaStreams(topology, properties);
     }
 
