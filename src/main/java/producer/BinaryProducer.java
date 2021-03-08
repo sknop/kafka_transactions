@@ -14,9 +14,8 @@ import java.util.concurrent.Callable;
         description = "Produces Binary objects in Avro format, either a fixed amount or continuously.")
 public class BinaryProducer extends AbstractProducer implements Callable<Integer> {
     @CommandLine.Option(names = {"--binary-topic"},
-            description = "Topic for the customer (default = ${DEFAULT-VALUE})",
-            defaultValue = "binary")
-    private String binaryTopic;
+            description = "Topic for the customer (default = ${DEFAULT-VALUE})")
+    private String binaryTopic = "binary";
     private BigInteger counter = new BigInteger("430E009A80B53D7896A57BFE4DD91954", 16);
 
     public BinaryProducer() {  }
