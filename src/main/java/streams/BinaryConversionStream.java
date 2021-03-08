@@ -78,10 +78,12 @@ public class BinaryConversionStream extends AbstreamStream implements Callable<I
 
     private KeyValue<String, HexString> convertKeyValuefromBinary(Binary binary) {
         ByteBuffer id = binary.getId();
-        BigInteger value = new BigInteger(id.array());
-        String key = value.toString(16).toUpperCase();
+        StringBuilder key = new StringBuilder();
+        for (byte b : id.array()) {
+            key.append(String.format("%02X", b));
+        }
 
-        return new KeyValue<>(key, new HexString(key, binary.getPayload()));
+        return new KeyValue<>(key.toString(), new HexString(key.toString(), binary.getPayload()));
     }
 
     @Override

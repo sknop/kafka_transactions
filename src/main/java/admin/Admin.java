@@ -14,10 +14,8 @@ import java.util.concurrent.ExecutionException;
 
 public class Admin {
     public static final String BOOTSTRAP_SERVERS = "localhost:9092";
-    public static final String SCHEMA_REGISTRY_URL = "http://localhost:8081";
 
     private String bootstrapServers;
-    private String schemaRegistryURL;
     private String configFile;
 
     private AdminClient client;
@@ -26,7 +24,6 @@ public class Admin {
         Properties properties = new Properties();
 
         bootstrapServers = options.get("bootstrap_servers");
-        schemaRegistryURL = options.get("schema_registry");
         configFile = options.get("config_file");
 
         if (configFile != null) {
@@ -84,10 +81,6 @@ public class Admin {
                 .type(String.class)
                 .setDefault(BOOTSTRAP_SERVERS)
                 .help(String.format("Kafka Bootstrap Servers(default %s)", BOOTSTRAP_SERVERS));
-        parser.addArgument("--schema-registry")
-                .type(String.class)
-                .setDefault(SCHEMA_REGISTRY_URL)
-                .help(String.format("Schema registry URL(de fault %s)", SCHEMA_REGISTRY_URL));
         parser.addArgument("-c","--create")
                 .type(String.class)
                 .help("Create a topic <name>");
