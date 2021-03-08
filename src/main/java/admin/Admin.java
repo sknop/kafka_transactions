@@ -2,29 +2,54 @@ package admin;
 
 import net.sourceforge.argparse4j.ArgumentParserBuilder;
 import net.sourceforge.argparse4j.ArgumentParsers;
-import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.kafka.clients.admin.*;
+import picocli.CommandLine;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
-public class Admin {
+@CommandLine.Command(
+        synopsisHeading = "%nUsage:%n",
+        descriptionHeading   = "%nDescription:%n%n",
+        parameterListHeading = "%nParameters:%n%n",
+        optionListHeading    = "%nOptions:%n%n",
+        mixinStandardHelpOptions = true,
+        sortOptions = false)
+public class Admin implements Callable<Integer> {
     public static final String BOOTSTRAP_SERVERS = "localhost:9092";
 
-    private String bootstrapServers;
-    private String configFile;
+    @CommandLine.Option(names = {"--bootstrap-servers"})
+    protected String bootstrapServers;
+
+    @CommandLine.Option(names = {"-c", "--config-file"},
+            description = "If provided, content will be added to the properties")
+    protected String configFile = null;
+
+    @CommandLine.Option(names = {"--create"})
+    protected String topicToCreate;
+
+    @CommandLine.Option(names = {"--partitions"})
+    protected int numberOfPartitions = 1;
+
+    @CommandLine.Option(names = {"--replication-factor"})
+    protected short replicationFactor = 1;
+
+    @CommandLine.Option(names = {"-v", "--verbose"},
+            description = "If enabled, will print out every message created")
+    protected boolean verbose = false;
 
     private AdminClient client;
 
-    public Admin(Namespace options) {
-        Properties properties = new Properties();
+    public Admin() {
+    }
 
-        bootstrapServers = options.get("bootstrap_servers");
-        configFile = options.get("config_file");
+    private void initialize() {
+        Properties properties = new Properties();
 
         if (configFile != null) {
             try (InputStream inputStream = new FileInputStream(configFile)) {
@@ -63,58 +88,44 @@ public class Admin {
         return descriptions.get();
     }
 
-    public Config createTopic(String name, int numberOfPartitions, short replicationFactor) throws ExecutionException, InterruptedException {
-        var newTopic = new NewTopic(name, numberOfPartitions, replicationFactor);
+    public Config createTopic() throws ExecutionException, InterruptedException {
+        var newTopic = new NewTopic(topicToCreate, numberOfPartitions, replicationFactor);
 
         var results = client.createTopics(Collections.singletonList(newTopic));
-        return results.config(name).get();
+        return results.config(topicToCreate).get();
     }
 
-    public static void main(String[] args) {
-        ArgumentParserBuilder builder = ArgumentParsers.newFor("Admin").addHelp(true);
+    @Override
+    public Integer call() {
+        initialize();
 
-        ArgumentParser parser = builder.build();
-        parser.addArgument("--config-file")
-                .type(String.class)
-                .help("Config file for authentication, for example");
-        parser.addArgument("--bootstrap-servers")
-                .type(String.class)
-                .setDefault(BOOTSTRAP_SERVERS)
-                .help(String.format("Kafka Bootstrap Servers(default %s)", BOOTSTRAP_SERVERS));
-        parser.addArgument("-c","--create")
-                .type(String.class)
-                .help("Create a topic <name>");
-        parser.addArgument("-p","--partitions")
-                .type(Integer.class)
-                .setDefault(1)
-                .help("Topic number of partitions");
-        parser.addArgument("-r","--replication")
-                .type(Short.class)
-                .setDefault((short)1)
-                .help("Topic replication-factor");
+        List<String> topics = null;
         try {
-            Namespace options = parser.parseArgs(args);
+            if (verbose) {
+                topics = getTopics();
+                topics.forEach(System.out::println);
 
-            Admin admin = new Admin(options);
+                var descriptions = getDescription(topics);
+                descriptions.values().forEach(System.out::println);
+            }
 
-            var topics = admin.getTopics();
-            topics.forEach(System.out::println);
-            var descriptions = admin.getDescription(topics);
-            descriptions.values().forEach(System.out::println);
-
-            String topicToCreate = options.get("create");
             if (topicToCreate != null) {
-                int partitions = options.get("partitions");
-                short replicationFactor = options.get("replication");
-
-                var config = admin.createTopic(topicToCreate, partitions, replicationFactor);
+                var config = createTopic();
                 System.out.println(config);
             }
 
-        } catch (ArgumentParserException e) {
-            System.err.println(e.getMessage());
-            System.err.println();
-            System.err.println(parser.formatHelp());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    public static void main(String[] args) {
+        try {
+            new CommandLine(new Admin()).execute(args);
         }
         catch (Exception e) {
             e.printStackTrace();
