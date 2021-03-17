@@ -45,13 +45,6 @@ public class CustomerProducer extends AbstractProducer implements Callable<Integ
         return new ProducerRecord<>(customerTopic, customerId, customer);
     }
 
-    @Override
-    public Integer call() throws Exception {
-        produce();
-
-        return 0;
-    }
-
     public static void main(String[] args) {
 
         try {

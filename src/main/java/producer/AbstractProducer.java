@@ -14,18 +14,12 @@ import picocli.CommandLine;
 import java.io.*;
 import java.util.Properties;
 import java.util.Random;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-@CommandLine.Command(
-        synopsisHeading = "%nUsage:%n",
-        descriptionHeading   = "%nDescription:%n%n",
-        parameterListHeading = "%nParameters:%n%n",
-        optionListHeading    = "%nOptions:%n%n",
-        mixinStandardHelpOptions = true,
-        sortOptions = false)
-public abstract class AbstractProducer extends AbstractBase {
-
+public abstract class AbstractProducer extends AbstractBase implements Callable<Integer>
+{
     @CommandLine.Option(names = {"--bootstrap-servers"})
     protected String bootstrapServers;
 
@@ -43,10 +37,6 @@ public abstract class AbstractProducer extends AbstractBase {
     @CommandLine.Option(names = {"-i", "--interactive"},
             description = "If enabled, will produce one event and wait for <Return>")
     protected boolean interactive;
-
-    @CommandLine.Option(names = {"-c", "--config-file"},
-            description = "If provided, content will be added to the properties")
-    protected String configFile = null;
 
     @CommandLine.Option(names = {"-v", "--verbose"},
             description = "If enabled, will print out every message created")
@@ -73,7 +63,7 @@ public abstract class AbstractProducer extends AbstractBase {
 
         addProducerProperties(properties);
 
-        readConfigFile(properties, configFile);
+        readConfigFile(properties);
 
         if (bootstrapServers != null) {
             properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
@@ -164,4 +154,10 @@ public abstract class AbstractProducer extends AbstractBase {
 
     protected abstract ProducerRecord<Integer, Object> createRecord();
 
+    @Override
+    public Integer call() throws Exception {
+        produce();
+
+        return 0;
+    }
 }

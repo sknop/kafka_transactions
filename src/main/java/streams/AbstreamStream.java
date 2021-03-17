@@ -10,13 +10,6 @@ import picocli.CommandLine;
 
 import java.util.Properties;
 
-@CommandLine.Command(
-        synopsisHeading = "%nUsage:%n",
-        descriptionHeading   = "%nDescription:%n%n",
-        parameterListHeading = "%nParameters:%n%n",
-        optionListHeading    = "%nOptions:%n%n",
-        mixinStandardHelpOptions = true,
-        sortOptions = false)
 public abstract class AbstreamStream extends AbstractBase {
     @CommandLine.Option(names = {"--bootstrap-servers"},
             description = "Bootstrap Servers (default = ${DEFAULT-VALUE})")
@@ -25,10 +18,6 @@ public abstract class AbstreamStream extends AbstractBase {
     @CommandLine.Option(names = {"--schema-registry"},
             description = "Schema Registry (default = ${DEFAULT-VALUE})")
     protected String schemaRegistryURL;
-
-    @CommandLine.Option(names = {"-c", "--config-file"},
-            description = "If provided, content will be added to the properties")
-    protected String configFile = null;
 
     @CommandLine.Option(names = {"-v", "--verbose"},
             description = "If enabled, will print out every message created")
@@ -46,7 +35,7 @@ public abstract class AbstreamStream extends AbstractBase {
         properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, DEFAULT_BOOTSTRAP_SERVERS);
         properties.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, DEFAULT_SCHEMA_REGISTRY);
 
-        AbstractBase.readConfigFile(properties, configFile);
+        readConfigFile(properties);
 
         properties.put(StreamsConfig.APPLICATION_ID_CONFIG, getApplicationName());
         if (bootstrapServers != null) {
@@ -59,8 +48,8 @@ public abstract class AbstreamStream extends AbstractBase {
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
         // Specify default (de)serializers for record keys and for record values.
-//        properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
-//        properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
+        // properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
+        // properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
 
         // properties.put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, StreamsConfig.EXACTLY_ONCE);
 

@@ -1,34 +1,25 @@
 package admin;
 
-import net.sourceforge.argparse4j.ArgumentParserBuilder;
-import net.sourceforge.argparse4j.ArgumentParsers;
-import net.sourceforge.argparse4j.inf.ArgumentParser;
-import net.sourceforge.argparse4j.inf.ArgumentParserException;
-import net.sourceforge.argparse4j.inf.Namespace;
+import common.AbstractBase;
 import org.apache.kafka.clients.admin.*;
 import picocli.CommandLine;
 
-import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
-@CommandLine.Command(
-        synopsisHeading = "%nUsage:%n",
-        descriptionHeading   = "%nDescription:%n%n",
-        parameterListHeading = "%nParameters:%n%n",
-        optionListHeading    = "%nOptions:%n%n",
-        mixinStandardHelpOptions = true,
-        sortOptions = false)
-public class Admin implements Callable<Integer> {
+@CommandLine.Command(name = "Admin",
+        version = "Admin 1.0",
+        description = "Starting point for an admin swiss army knife.")
+public class Admin extends AbstractBase implements Callable<Integer> {
     public static final String BOOTSTRAP_SERVERS = "localhost:9092";
 
     @CommandLine.Option(names = {"--bootstrap-servers"})
     protected String bootstrapServers;
-
-    @CommandLine.Option(names = {"-c", "--config-file"},
-            description = "If provided, content will be added to the properties")
-    protected String configFile = null;
 
     @CommandLine.Option(names = {"--create"})
     protected String topicToCreate;
@@ -40,7 +31,7 @@ public class Admin implements Callable<Integer> {
     protected short replicationFactor = 1;
 
     @CommandLine.Option(names = {"-v", "--verbose"},
-            description = "If enabled, will print out every message created")
+            description = "If enabled, will print out all topics")
     protected boolean verbose = false;
 
     private AdminClient client;
@@ -48,22 +39,11 @@ public class Admin implements Callable<Integer> {
     public Admin() {
     }
 
-    private void initialize() {
+    @Override
+    protected void createProperties() {
         Properties properties = new Properties();
 
-        if (configFile != null) {
-            try (InputStream inputStream = new FileInputStream(configFile)) {
-                Reader reader = new InputStreamReader(inputStream);
-
-                properties.load(reader);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                System.err.println("Inputfile " + configFile + " not found");
-                System.exit(1);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        readConfigFile(properties);
 
         properties.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 
@@ -88,18 +68,17 @@ public class Admin implements Callable<Integer> {
         return descriptions.get();
     }
 
-    public Config createTopic() throws ExecutionException, InterruptedException {
+    public CreateTopicsResult createTopic() throws ExecutionException, InterruptedException {
         var newTopic = new NewTopic(topicToCreate, numberOfPartitions, replicationFactor);
 
-        var results = client.createTopics(Collections.singletonList(newTopic));
-        return results.config(topicToCreate).get();
+        return client.createTopics(Collections.singletonList(newTopic));
     }
 
     @Override
     public Integer call() {
-        initialize();
+        createProperties();
 
-        List<String> topics = null;
+        List<String> topics;
         try {
             if (verbose) {
                 topics = getTopics();
@@ -111,12 +90,9 @@ public class Admin implements Callable<Integer> {
 
             if (topicToCreate != null) {
                 var config = createTopic();
-                System.out.println(config);
+                System.out.println(config.config(topicToCreate).get());
             }
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
+        } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
 
@@ -132,4 +108,5 @@ public class Admin implements Callable<Integer> {
             System.exit(1);
         }
     }
+
 }
