@@ -82,6 +82,7 @@ public class Admin extends AbstractBase implements Callable<Integer> {
         List<String> topics;
         try {
             var clusterDescription = client.describeCluster();
+
             System.out.println("ClusterID : " + clusterDescription.clusterId().get());
             var controller = clusterDescription.controller().get();
 
