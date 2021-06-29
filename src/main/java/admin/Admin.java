@@ -2,13 +2,10 @@ package admin;
 
 import common.AbstractBase;
 import org.apache.kafka.clients.admin.*;
+import org.apache.kafka.common.Node;
 import picocli.CommandLine;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
@@ -37,6 +34,11 @@ public class Admin extends AbstractBase implements Callable<Integer> {
     private AdminClient client;
 
     public Admin() {
+    }
+
+    public Admin(String bootstrapServers) {
+        this.bootstrapServers = bootstrapServers;
+        createProperties();
     }
 
     @Override
@@ -75,6 +77,19 @@ public class Admin extends AbstractBase implements Callable<Integer> {
         return client.createTopics(Collections.singletonList(newTopic));
     }
 
+    public CreateTopicsResult createTopic(String topic, int partitions, short replFactor) throws ExecutionException, InterruptedException {
+        topicToCreate = topic;
+        numberOfPartitions = partitions;
+        replicationFactor = replFactor;
+
+        return createTopic();
+    }
+
+    public Collection<Node> getKafkaNodes() throws ExecutionException, InterruptedException {
+        var clusterDescription = client.describeCluster();
+        return clusterDescription.nodes().get();
+    }
+
     @Override
     public Integer call() {
         createProperties();
@@ -86,7 +101,7 @@ public class Admin extends AbstractBase implements Callable<Integer> {
             System.out.println("ClusterID : " + clusterDescription.clusterId().get());
             var controller = clusterDescription.controller().get();
 
-            for (var node : clusterDescription.nodes().get()) {
+            for (var node : getKafkaNodes()) {
                 String output = String.format("Id = %d %s:%d",node.id(), node.host(), node.port());
                 if (node == controller) {
                     output += " Controller";
