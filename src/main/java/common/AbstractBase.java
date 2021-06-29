@@ -4,6 +4,7 @@ import picocli.CommandLine;
 
 import java.io.*;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 @CommandLine.Command(
         synopsisHeading = "%nUsage:%n",
@@ -15,6 +16,7 @@ import java.util.Properties;
 abstract public class AbstractBase {
     protected static final String DEFAULT_BOOTSTRAP_SERVERS = "localhost:9092";
     protected static final String DEFAULT_SCHEMA_REGISTRY =  "http://localhost:8081";
+    protected Logger logger = Logger.getLogger("AbstractBase");
 
     protected Properties properties = new Properties();
 
@@ -24,10 +26,13 @@ abstract public class AbstractBase {
 
     public void readConfigFile(Properties properties) {
         if (configFile != null) {
+            logger.info("Reading config file " + configFile);
+
             try (InputStream inputStream = new FileInputStream(configFile)) {
                 Reader reader = new InputStreamReader(inputStream);
 
                 properties.load(reader);
+                logger.info(properties.toString());
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
                 System.err.println("Inputfile " + configFile + " not found");
@@ -35,6 +40,9 @@ abstract public class AbstractBase {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+        else {
+            logger.warning("No config file specified");
         }
     }
 
