@@ -80,6 +80,18 @@ public class Admin extends AbstractBase implements Callable<Integer> {
 
         List<String> topics;
         try {
+            var clusterDescription = client.describeCluster();
+            System.out.println("ClusterID : " + clusterDescription.clusterId().get());
+            var controller = clusterDescription.controller().get();
+
+            for (var node : clusterDescription.nodes().get()) {
+                String output = String.format("Id = %d %s:%d",node.id(), node.host(), node.port());
+                if (node == controller) {
+                    output += " Controller";
+                }
+                System.out.println(output);
+            }
+
             if (verbose) {
                 topics = getTopics();
                 topics.forEach(System.out::println);
