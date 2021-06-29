@@ -5,6 +5,7 @@ import picocli.CommandLine;
 import java.io.*;
 import java.util.Properties;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @CommandLine.Command(
         synopsisHeading = "%nUsage:%n",
@@ -32,7 +33,10 @@ abstract public class AbstractBase {
                 Reader reader = new InputStreamReader(inputStream);
 
                 properties.load(reader);
-                logger.info(properties.toString());
+                logger.info(properties.entrySet()
+                            .stream()
+                            .map(e -> e.getKey() + " : " + e.getValue())
+                            .collect(Collectors.joining(", ")));
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
                 System.err.println("Inputfile " + configFile + " not found");

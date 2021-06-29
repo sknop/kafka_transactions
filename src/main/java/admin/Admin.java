@@ -45,7 +45,8 @@ public class Admin extends AbstractBase implements Callable<Integer> {
 
         readConfigFile(properties);
 
-        properties.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        if (bootstrapServers != null)
+            properties.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
 
         client = AdminClient.create(properties);
 
