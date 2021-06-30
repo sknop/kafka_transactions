@@ -20,6 +20,12 @@ public class CustomerProducer extends AbstractProducer implements Callable<Integ
 
     public CustomerProducer() {  }
 
+    public CustomerProducer(String bootstrapServers, String schemaRegistries, int maxObjects, String customerTopic) {
+        this.bootstrapServers = bootstrapServers;
+        this.schemaRegistryURL = schemaRegistries;
+        this.maxObjects = maxObjects;
+        this.customerTopic = customerTopic;
+    }
 
     @Override
     protected void addProducerProperties(Properties properties) {

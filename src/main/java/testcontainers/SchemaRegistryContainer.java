@@ -1,0 +1,43 @@
+package testcontainers;
+
+import com.github.dockerjava.api.command.InspectContainerResponse;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.utility.DockerImageName;
+
+public class SchemaRegistryContainer extends GenericContainer<SchemaRegistryContainer> {
+    public static final int SCHEMA_REGISTRY_PORT = 8081;
+
+    private static final int PORT_NOT_ASSIGNED = -1;
+
+    protected KafkaContainer kafkaContainer;
+    private int port = PORT_NOT_ASSIGNED;
+
+    public SchemaRegistryContainer(final DockerImageName dockerImageName, KafkaContainer kafkaContainer) {
+        super(dockerImageName);
+
+        this.kafkaContainer = kafkaContainer;
+
+        dependsOn(kafkaContainer);
+        withExposedPorts(SCHEMA_REGISTRY_PORT);
+
+        withEnv("host.name", "schema-registry");
+        withEnv("SCHEMA_REGISTRY_HOST_NAME", "schema-registry");
+        withEnv("SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS", kafkaContainer.getNetworkAliases().get(0) + ":9092");
+        withEnv("SCHEMA_REGISTRY_LISTENERS", "http://0.0.0.0:" + SCHEMA_REGISTRY_PORT);
+    }
+
+    public String getSchemaRegistries() {
+        if (port == PORT_NOT_ASSIGNED) {
+            throw new IllegalStateException("You should start Schema Registry container first");
+        }
+        return String.format("http://%s:%s",getHost(), port);
+    }
+
+    @Override
+    protected void containerIsStarting(InspectContainerResponse containerInfo, boolean reused) {
+        super.containerIsStarting(containerInfo, reused);
+
+        port = getMappedPort(SCHEMA_REGISTRY_PORT);
+    }
+}

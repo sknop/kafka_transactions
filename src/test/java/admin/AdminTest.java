@@ -2,7 +2,6 @@ package admin;
 
 import org.apache.kafka.clients.admin.CreateTopicsResult;
 import org.apache.kafka.common.Node;
-import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.KafkaContainer;
