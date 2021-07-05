@@ -12,6 +12,8 @@ import schema.Customer;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
+import static java.lang.Runtime.*;
+
 @CommandLine.Command(name = "CustomerStream",
         version = "CustomerStream 1.0",
         description = "Reads Customer objects in Avro format from a stream.")
@@ -47,6 +49,13 @@ public class CustomerStream extends AbstreamStream implements Callable<Integer> 
         KafkaStreams streams = createStreams(builder.build());
         streams.setStateListener((newState, oldState) -> System.out.println("*** Changed state from " +oldState + " to " + newState));
         streams.start();
+
+        if (scale > 1) {
+            for (var threads = 1; threads < scale; threads++) {
+                logger.info(String.format("Increased thread count to %d", threads));
+                streams.addStreamThread();
+            }
+        }
 
         // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
         Runtime.getRuntime().addShutdownHook(new Thread(streams::close));

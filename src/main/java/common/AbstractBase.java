@@ -39,7 +39,7 @@ abstract public class AbstractBase {
                             .collect(Collectors.joining(", ")));
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
-                System.err.println("Inputfile " + configFile + " not found");
+                logger.severe("Inputfile " + configFile + " not found");
                 System.exit(1);
             } catch (IOException e) {
                 e.printStackTrace();

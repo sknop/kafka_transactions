@@ -23,6 +23,10 @@ public abstract class AbstreamStream extends AbstractBase {
             description = "If enabled, will print out every message created")
     protected boolean verbose = false;
 
+    @CommandLine.Option(names = {"--scale"},
+            description = "If greater than 1, Stream app will increase threads to the number provided")
+    protected int scale = 1;
+
     @CommandLine.Option(names = {"--enable-monitoring-interceptor"},
             description = "Enable MonitoringInterceptors (for Control Center)")
     protected boolean monitoringInterceptors = false;
