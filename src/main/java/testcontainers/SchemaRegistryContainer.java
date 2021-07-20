@@ -13,18 +13,24 @@ public class SchemaRegistryContainer extends GenericContainer<SchemaRegistryCont
     protected KafkaContainer kafkaContainer;
     private int port = PORT_NOT_ASSIGNED;
 
-    public SchemaRegistryContainer(final DockerImageName dockerImageName, KafkaContainer kafkaContainer) {
+    public SchemaRegistryContainer(final DockerImageName dockerImageName) {
         super(dockerImageName);
 
-        this.kafkaContainer = kafkaContainer;
-
-        dependsOn(kafkaContainer);
         withExposedPorts(SCHEMA_REGISTRY_PORT);
 
         withEnv("host.name", "schema-registry");
         withEnv("SCHEMA_REGISTRY_HOST_NAME", "schema-registry");
-        withEnv("SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS", kafkaContainer.getNetworkAliases().get(0) + ":9092");
         withEnv("SCHEMA_REGISTRY_LISTENERS", "http://0.0.0.0:" + SCHEMA_REGISTRY_PORT);
+    }
+
+    public SchemaRegistryContainer withKafka(KafkaContainer kafkaContainer) {
+        this.kafkaContainer = kafkaContainer;
+
+        dependsOn(kafkaContainer);
+        withNetwork(kafkaContainer.getNetwork());
+        withEnv("SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS", kafkaContainer.getNetworkAliases().get(0) + ":9092");
+
+        return this;
     }
 
     public String getSchemaRegistries() {

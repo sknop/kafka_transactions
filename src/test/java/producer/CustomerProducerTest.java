@@ -13,7 +13,6 @@ import testcontainers.SchemaRegistryContainer;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class CustomerProducerTest {
@@ -28,8 +27,8 @@ public class CustomerProducerTest {
 
     @RegisterExtension
     @Order(3)
-    public static SchemaRegistryContainer schemaRegistry = new SchemaRegistryContainer(DockerImageName.parse("confluentinc/cp-schema-registry:6.2.0"), kafka)
-            .withNetwork(network);
+    public static SchemaRegistryContainer schemaRegistry = new SchemaRegistryContainer(DockerImageName.parse("confluentinc/cp-schema-registry:6.2.0"))
+            .withKafka(kafka);
 
     @BeforeAll
     public static void startUp() {
