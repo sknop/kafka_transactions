@@ -2,9 +2,9 @@ package admin;
 
 import org.apache.kafka.clients.admin.CreateTopicsResult;
 import org.apache.kafka.common.Node;
-import org.junit.ClassRule;
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.utility.DockerImageName;
 
 import java.util.Collection;
@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AdminTest {
-    @ClassRule
+    @Container
     public static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.0"));
 
     @BeforeAll
