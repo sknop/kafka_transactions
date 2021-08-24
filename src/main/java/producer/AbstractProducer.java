@@ -97,6 +97,10 @@ public abstract class AbstractProducer extends AbstractBase implements Callable<
             producer.close();
         }));
 
+        produceLoop(producer);
+    }
+
+    protected void produceLoop(KafkaProducer<Integer, Object> producer) throws IOException {
         var terminal = TerminalBuilder.terminal();
         terminal.enterRawMode();
         var reader = terminal.reader();
@@ -104,7 +108,7 @@ public abstract class AbstractProducer extends AbstractBase implements Callable<
         int c = 0;
         if (maxObjects == -1) {
             while (doProduce && c != 'q') {
-                doProduce(producer);
+                singleProduce(producer);
 
                 if (interactive) {
                     System.out.println("Press any key to continue ...(or 'q' to quit)");
@@ -115,7 +119,7 @@ public abstract class AbstractProducer extends AbstractBase implements Callable<
         }
         else {
             for (int i = 0; i < maxObjects; i++) {
-                doProduce(producer);
+                singleProduce(producer);
                 if (interactive) {
                     System.out.println("Press any key to continue ... (or 'q' to quit)");
 
@@ -129,7 +133,7 @@ public abstract class AbstractProducer extends AbstractBase implements Callable<
         System.out.println("Total produced = " + produced);
     }
 
-    private void doProduce(KafkaProducer<Integer, Object> producer) {
+    private void singleProduce(KafkaProducer<Integer, Object> producer) {
         ProducerRecord<Integer, Object> record = createRecord();
         int valueSize = 0;
 
@@ -141,7 +145,8 @@ public abstract class AbstractProducer extends AbstractBase implements Callable<
             e.printStackTrace();
         }
 
-        producer.flush();
+        // TODO: Why?
+        // producer.flush();
 
         if (verbose)
             System.out.println("Produced [" +valueSize + "] " + record);

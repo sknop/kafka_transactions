@@ -1,67 +1,69 @@
 package producer;
 
-import io.confluent.kafka.serializers.KafkaAvroSerializer;
-import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
-import net.sourceforge.argparse4j.ArgumentParserBuilder;
-import net.sourceforge.argparse4j.ArgumentParsers;
-import net.sourceforge.argparse4j.inf.ArgumentParser;
-import net.sourceforge.argparse4j.inf.ArgumentParserException;
-import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.IntegerSerializer;
+import picocli.CommandLine;
 import schema.Change;
 import schema.Revision;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.Properties;
 import java.util.Random;
+import java.util.concurrent.Callable;
 
-public class TransactionalProducer {
+@CommandLine.Command(name = "TransactionalProducer",
+        version = "TransactionalProducer 1.0",
+        description = "Produces Change and Revision events in Avro format, either a fixed amount or continuously.")
+public class TransactionalProducer extends AbstractProducer implements Callable<Integer>  {
 
-    private final static String CHANGE_TOPIC = "CHANGE";
-    public static final String REVISION_TOPIC = "REVISION";
-    public static final String BOOTSTRAP_SERVERS = "localhost:9092";
-    public static final String SCHEMA_REGISTRY_URL = "http://localhost:8081";
+    private final static String CHANGE_TOPIC = "change";
+    public static final String REVISION_TOPIC = "revision";
     public static final String CHANGE_TRANSACTION_ID = "change-transaction-id";
 
+    @CommandLine.Option(names = {"--change-topic"},
+            description = "Topic for change (default = ${DEFAULT-VALUE})",
+            defaultValue = CHANGE_TOPIC)
     private String changeTopic;
+
+    @CommandLine.Option(names = {"--revision-topic"},
+            description = "Topic for revision (default = ${DEFAULT-VALUE})",
+            defaultValue = REVISION_TOPIC)
     private String revisionTopic;
+
+    @CommandLine.Option(names = {"--number-of-changes"},
+            description = "Number of total changes",
+            required = true)
     private int numberOfChanges;
+
+    @CommandLine.Option(names = {"--number-of-revisions"},
+            description = "Total number of revisions per change (default = ${DEFAULT-VALUE})",
+            defaultValue = "10")
     private int maxNumberOfFiles;
+
+    @CommandLine.Option(names = {"--change-offset"},
+            description = "Start number for changes (default = ${DEFAULT-VALUE})",
+            defaultValue = "1")
     private int changeOffset;
-    private String bootstrapServers;
-    private String schemaRegistryURL;
 
     private Random random = new Random();
 
-    public TransactionalProducer(Namespace options) {
-        numberOfChanges = options.getInt("changes");
-        maxNumberOfFiles = options.getInt("range");
-        changeOffset = options.getInt("offset");
-        changeTopic = options.get("change_topic");
-        revisionTopic = options.get("revision_topic");
-        bootstrapServers = options.get("bootstrap_servers");
-        schemaRegistryURL = options.get("schema_registry");
+    public TransactionalProducer() {
     }
 
-    private KafkaProducer<Integer, Object> createProducer() {
-        Properties properties = new Properties();
-        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
-        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
-        properties.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryURL);
+    @Override
+    protected void addProducerProperties(Properties properties) {
         properties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, CHANGE_TRANSACTION_ID);
-
-        KafkaProducer<Integer, Object> producer = new KafkaProducer<>(properties);
-
-        return producer;
     }
 
-    public void runProducer() {
-        KafkaProducer<Integer, Object> producer = createProducer();
+    @Override
+    protected ProducerRecord<Integer, Object> createRecord() {
+        return null;
+    }
 
+    @Override
+    protected void produceLoop(KafkaProducer<Integer, Object> producer) {
         producer.initTransactions();
 
         for (int i = 0; i < numberOfChanges; i++) {
@@ -89,56 +91,15 @@ public class TransactionalProducer {
             }
             producer.commitTransaction();
         }
-        producer.close();
     }
 
     public static void main(String[] args) {
-        ArgumentParserBuilder builder = ArgumentParsers.newFor("TransactionalProducer").addHelp(true);
-
-        ArgumentParser parser = builder.build();
-        parser.addArgument("-c", "--changes")
-                .required(true)
-                .type(Integer.class)
-                .help("Number of changes to generate");
-        parser.addArgument("-r", "--range")
-                .type(Integer.class)
-                .setDefault(10)
-                .help("Maximum number of changes (default 10)");
-        parser.addArgument("-o", "--offset")
-                .setDefault(1)
-                .type(Integer.class)
-                .help("Offset for changes (default: 1");
-        parser.addArgument("--change-topic")
-                .type(String.class)
-                .setDefault(CHANGE_TOPIC)
-                .help(String.format("Topic for the change (default %s)",CHANGE_TOPIC));
-        parser.addArgument("--revision-topic")
-                .type(String.class)
-                .setDefault(REVISION_TOPIC)
-                .help(String.format("Topic for files (default %s", REVISION_TOPIC));
-        parser.addArgument("--bootstrap-servers")
-                .type(String.class)
-                .setDefault(BOOTSTRAP_SERVERS)
-                .help(String.format("Kafka Bootstrap Servers(default %s)", BOOTSTRAP_SERVERS));
-        parser.addArgument("--schema-registry")
-                .type(String.class)
-                .setDefault(SCHEMA_REGISTRY_URL)
-                .help(String.format("Schema registry URL(de fault %s)", SCHEMA_REGISTRY_URL));
-
         try {
-            Namespace options = parser.parseArgs(args);
-
-            TransactionalProducer producer = new TransactionalProducer(options);
-            producer.runProducer();
-
-        } catch (ArgumentParserException e) {
-            System.err.println(e.getMessage());
-            System.err.println();
-            System.err.println(parser.formatHelp());
+            new CommandLine(new TransactionalProducer()).execute(args);
         }
         catch (Exception e) {
             e.printStackTrace();
+            System.exit(1);
         }
-
     }
 }
