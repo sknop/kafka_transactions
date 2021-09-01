@@ -47,14 +47,20 @@ public class TransactionalProducer extends AbstractProducer implements Callable<
             defaultValue = "1")
     private int changeOffset;
 
-    private Random random = new Random();
+    @CommandLine.Option(names = {"--transaction-id"},
+            description = "Name of the transaction id (default = ${DEFAULT-VALUE})",
+            defaultValue = CHANGE_TRANSACTION_ID)
+    private String transactionId;
+
+    final private Random random = new Random();
 
     public TransactionalProducer() {
     }
 
     @Override
     protected void addProducerProperties(Properties properties) {
-        properties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, CHANGE_TRANSACTION_ID);
+        properties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, transactionId);
+        super.addProducerProperties(properties);
     }
 
     @Override

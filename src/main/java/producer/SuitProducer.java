@@ -22,10 +22,6 @@ public class SuitProducer extends AbstractProducer implements Callable<Integer> 
 
 
     @Override
-    protected void addProducerProperties(Properties properties) {
-    }
-
-    @Override
     protected ProducerRecord<Integer,Object> createRecord() {
 
         Suit suit = new Suit();

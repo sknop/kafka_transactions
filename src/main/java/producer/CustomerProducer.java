@@ -28,10 +28,6 @@ public class CustomerProducer extends AbstractProducer implements Callable<Integ
     }
 
     @Override
-    protected void addProducerProperties(Properties properties) {
-    }
-
-    @Override
     protected ProducerRecord<Integer,Object> createRecord() {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss xxx");
         ZonedDateTime now = ZonedDateTime.now();

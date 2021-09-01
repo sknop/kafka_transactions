@@ -22,11 +22,6 @@ public class PricePointProducer extends AbstractProducer implements Callable<Int
 
     public PricePointProducer() {  }
 
-
-    @Override
-    protected void addProducerProperties(Properties properties) {
-    }
-
     @Override
     protected ProducerRecord<Integer,Object> createRecord() {
         int productId = random.nextInt(largestId) + 1;

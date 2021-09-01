@@ -39,10 +39,6 @@ public class GenericOrderProducer extends AbstractProducer implements Callable<I
     }
 
     @Override
-    protected void addProducerProperties(Properties properties) {
-    }
-
-    @Override
     protected ProducerRecord<Integer, Object> createRecord() {
         GenericRecord record = new GenericData.Record(schema);
 

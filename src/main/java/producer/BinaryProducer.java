@@ -20,11 +20,6 @@ public class BinaryProducer extends AbstractProducer implements Callable<Integer
 
     public BinaryProducer() {  }
 
-
-    @Override
-    protected void addProducerProperties(Properties properties) {
-    }
-
     @Override
     protected ProducerRecord<Integer,Object> createRecord() {
 
