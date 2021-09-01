@@ -1,42 +1,26 @@
 package producer;
 
 import common.AbstractBase;
-import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import picocli.CommandLine;
 
 import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.logging.Logger;
 
 public abstract class AbstractBaseProducer<KeyType,ValueType> extends AbstractBase implements Callable<Integer> {
+    protected Logger logger = Logger.getLogger(AbstractBaseProducer.class.getName());
 
-    @CommandLine.Option(names = {"--bootstrap-servers"})
-    protected String bootstrapServers;
-    @CommandLine.Option(names = {"--schema-registry"})
-    protected String schemaRegistryURL;
-    @CommandLine.Option(names = {"--enable-monitoring-interceptor"},
-            description = "Enable MonitoringInterceptors (for Control Center)")
-    protected boolean monitoringInterceptors = false;
     protected boolean doProduce = true;
 
-    @Override
-    protected void createProperties() {
-        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, DEFAULT_BOOTSTRAP_SERVERS);
-        properties.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG, true);
-        properties.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, DEFAULT_SCHEMA_REGISTRY);
+    protected KafkaProducer<KeyType, ValueType> createProducer() {
+        logger.info("Using properties " + properties);
+        return new KafkaProducer<>(properties);
+    }
 
-        addProducerProperties(properties);
-
-        readConfigFile(properties);
-
-        if (bootstrapServers != null) {
-            properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        }
-        if (schemaRegistryURL != null) {
-            properties.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryURL);
-        }
+    protected void addProperties(Properties properties) {
+        super.addProperties(properties);
 
         if (monitoringInterceptors) {
             properties.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG,
@@ -45,15 +29,6 @@ public abstract class AbstractBaseProducer<KeyType,ValueType> extends AbstractBa
             properties.put("confluent.monitoring.interceptor.timeout.ms", 3000);
             properties.put("confluent.monitoring.interceptor.publishMs", 10000);
         }
-    }
-
-    protected KafkaProducer<KeyType, ValueType> createProducer() {
-        System.out.println("Using properties " + properties);
-        return new KafkaProducer<KeyType,ValueType>(properties);
-    }
-
-    protected void addProducerProperties(Properties properties) {
-        // empty
     }
 
     protected final void produce() throws IOException {

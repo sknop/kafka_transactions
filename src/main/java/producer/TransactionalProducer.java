@@ -7,7 +7,6 @@ import picocli.CommandLine;
 import schema.Change;
 import schema.Revision;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.util.Properties;
 import java.util.Random;
@@ -58,9 +57,9 @@ public class TransactionalProducer extends AbstractProducer implements Callable<
     }
 
     @Override
-    protected void addProducerProperties(Properties properties) {
+    protected void addProperties(Properties properties) {
         properties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, transactionId);
-        super.addProducerProperties(properties);
+        super.addProperties(properties);
     }
 
     @Override

@@ -40,11 +40,11 @@ public abstract class AbstractProducer extends AbstractBaseProducer<Integer, Obj
     }
 
     @Override
-    protected void addProducerProperties(Properties properties) {
+    protected void addProperties(Properties properties) {
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
 
-        super.addProducerProperties(properties);
+        super.addProperties(properties);
     }
 
     @Override

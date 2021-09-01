@@ -50,11 +50,11 @@ public class NumberProducer extends AbstractBaseProducer<Void, Long> {
     }
 
     @Override
-    protected void addProducerProperties(Properties properties) {
+    protected void addProperties(Properties properties) {
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, LongSerializer.class);
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, VoidSerializer.class);
 
-        super.addProducerProperties(properties);
+        super.addProperties(properties);
     }
 
     public static void main(String[] args) {
