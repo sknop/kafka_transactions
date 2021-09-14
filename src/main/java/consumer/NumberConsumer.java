@@ -28,26 +28,28 @@ public class NumberConsumer extends AbstractBaseConsumer<Void, Long> {
     @CommandLine.Option(names = {"--asynch"},
             description = "Commit asynchronously (default = ${DEFAULT-VALUE}")
     private boolean async = false;
+    private Duration duration = Duration.ofMillis(10000);
 
     @Override
-    protected void consumeLoop(KafkaConsumer<Void, Long> consumer) throws IOException {
+    protected void subscribe(KafkaConsumer<Void, Long> consumer) {
         consumer.subscribe(Arrays.asList(numberTopic));
+    }
 
-        Duration duration = Duration.ofMillis(10000);
-
-        while(doConsume) {
-            ConsumerRecords<Void, Long> records = consumer.poll(duration);
-            System.out.println(String.format("*** Batch size %d", records.count()));
-            for (ConsumerRecord<Void, Long> record : records) {
-                System.out.println("Found " + record.value());
-                if (single) {
-                    commitMessages(consumer);
-                }
-            }
-            if (!single) {
+    @Override
+    protected int consumeBatch(KafkaConsumer<Void, Long> consumer) {
+        ConsumerRecords<Void, Long> records = consumer.poll(duration);
+        System.out.println(String.format("*** Batch size %d", records.count()));
+        for (ConsumerRecord<Void, Long> record : records) {
+            System.out.println("Found " + record.value());
+            if (single) {
                 commitMessages(consumer);
             }
         }
+        if (!single) {
+            commitMessages(consumer);
+        }
+
+        return records.count();
     }
 
     private void commitMessages(KafkaConsumer<Void, Long> consumer) {
