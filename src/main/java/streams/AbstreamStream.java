@@ -11,14 +11,6 @@ import picocli.CommandLine;
 import java.util.Properties;
 
 public abstract class AbstreamStream extends AbstractBase {
-    @CommandLine.Option(names = {"--bootstrap-servers"},
-            description = "Bootstrap Servers (default = ${DEFAULT-VALUE})")
-    protected String bootstrapServers;
-
-    @CommandLine.Option(names = {"--schema-registry"},
-            description = "Schema Registry (default = ${DEFAULT-VALUE})")
-    protected String schemaRegistryURL;
-
     @CommandLine.Option(names = {"-v", "--verbose"},
             description = "If enabled, will print out every message created")
     protected boolean verbose = false;
@@ -26,10 +18,6 @@ public abstract class AbstreamStream extends AbstractBase {
     @CommandLine.Option(names = {"--scale"},
             description = "If greater than 1, Stream app will increase threads to the number provided")
     protected int scale = 1;
-
-    @CommandLine.Option(names = {"--enable-monitoring-interceptor"},
-            description = "Enable MonitoringInterceptors (for Control Center)")
-    protected boolean monitoringInterceptors = false;
 
     public AbstreamStream() {
     }
