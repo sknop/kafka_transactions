@@ -21,7 +21,7 @@ public class SensorDataProducer extends AbstractProducer implements Callable<Int
     public SensorDataProducer() {  }
 
     @Override
-    protected ProducerRecord<Integer,Object> createRecord() {
+    protected ProducerRecord<Object,Object> createRecord() {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss xxx");
         ZonedDateTime now = ZonedDateTime.now();
 

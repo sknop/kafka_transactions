@@ -63,12 +63,12 @@ public class TransactionalProducer extends AbstractProducer implements Callable<
     }
 
     @Override
-    protected ProducerRecord<Integer, Object> createRecord() {
+    protected ProducerRecord<Object, Object> createRecord() {
         return null;
     }
 
     @Override
-    protected void produceLoop(KafkaProducer<Integer, Object> producer) {
+    protected void produceLoop(KafkaProducer<Object, Object> producer) {
         producer.initTransactions();
 
         for (int i = 0; i < numberOfChanges; i++) {
@@ -80,7 +80,7 @@ public class TransactionalProducer extends AbstractProducer implements Callable<
             change.setUser("sknop");
             change.setClient("sknop_milo");
 
-            ProducerRecord<Integer, Object> changeRecord = new ProducerRecord<>(changeTopic, change.getChange(), change);
+            ProducerRecord<Object, Object> changeRecord = new ProducerRecord<>(changeTopic, change.getChange(), change);
             producer.send(changeRecord);
 
             int numberOfFiles = 1 + random.nextInt(maxNumberOfFiles);
@@ -91,7 +91,7 @@ public class TransactionalProducer extends AbstractProducer implements Callable<
                 file.setRevision(1);
                 file.setAction("add");
 
-                ProducerRecord<Integer, Object> revisionRecord = new ProducerRecord<>(revisionTopic, change.getChange(), file);
+                ProducerRecord<Object, Object> revisionRecord = new ProducerRecord<>(revisionTopic, change.getChange(), file);
                 producer.send(revisionRecord);
             }
             producer.commitTransaction();

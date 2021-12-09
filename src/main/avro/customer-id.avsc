@@ -1,0 +1,11 @@
+{
+  "type" : "record",
+  "name" : "CustomerId",
+  "namespace" : "schema",
+  "fields" : [ {
+      "name" : "customerId",
+      "type" : "int",
+      "doc"  : "Identifier for reference"
+   } ],
+  "doc:" : "Id of a customer"
+}

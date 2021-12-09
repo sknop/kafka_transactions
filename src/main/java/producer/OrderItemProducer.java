@@ -24,7 +24,7 @@ public class OrderItemProducer extends AbstractProducer implements Callable<Inte
 
 
     @Override
-    protected ProducerRecord<Integer,Object> createRecord() {
+    protected ProducerRecord<Object,Object> createRecord() {
         var productId = random.nextInt(100);
         var orderId = random.nextInt(100000);
         var count = random.nextInt(10) + 1;

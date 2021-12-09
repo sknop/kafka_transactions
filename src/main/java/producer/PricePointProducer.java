@@ -23,7 +23,7 @@ public class PricePointProducer extends AbstractProducer implements Callable<Int
     public PricePointProducer() {  }
 
     @Override
-    protected ProducerRecord<Integer,Object> createRecord() {
+    protected ProducerRecord<Object,Object> createRecord() {
         int productId = random.nextInt(largestId) + 1;
         long date = System.currentTimeMillis();
         float price = (float) ThreadLocalRandom.current().nextDouble(0.0,100.0);

@@ -39,7 +39,7 @@ public class GenericOrderProducer extends AbstractProducer implements Callable<I
     }
 
     @Override
-    protected ProducerRecord<Integer, Object> createRecord() {
+    protected ProducerRecord<Object, Object> createRecord() {
         GenericRecord record = new GenericData.Record(schema);
 
         int orderId = random.nextInt(largestId) + 1;

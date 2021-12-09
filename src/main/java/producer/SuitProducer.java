@@ -22,7 +22,7 @@ public class SuitProducer extends AbstractProducer implements Callable<Integer> 
 
 
     @Override
-    protected ProducerRecord<Integer,Object> createRecord() {
+    protected ProducerRecord<Object,Object> createRecord() {
 
         Suit suit = new Suit();
         suit.setSuit(schema.enums.Suit.DIAMONDS);

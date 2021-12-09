@@ -49,6 +49,8 @@ public class NumberConsumer extends AbstractBaseConsumer<Void, Long> {
             commitMessages(consumer);
         }
 
+        printOffsets(consumer);
+
         return records.count();
     }
 
@@ -59,6 +61,10 @@ public class NumberConsumer extends AbstractBaseConsumer<Void, Long> {
         else {
             consumer.commitSync();
         }
+    }
+
+    private void printOffsets(KafkaConsumer<Void, Long> consumer) {
+
     }
 
     @Override

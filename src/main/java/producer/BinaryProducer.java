@@ -21,7 +21,7 @@ public class BinaryProducer extends AbstractProducer implements Callable<Integer
     public BinaryProducer() {  }
 
     @Override
-    protected ProducerRecord<Integer,Object> createRecord() {
+    protected ProducerRecord<Object,Object> createRecord() {
 
         counter = counter.add(BigInteger.valueOf(1));
 

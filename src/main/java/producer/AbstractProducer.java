@@ -15,7 +15,7 @@ import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-public abstract class AbstractProducer extends AbstractBaseProducer<Integer, Object>
+public abstract class AbstractProducer extends AbstractBaseProducer<Object, Object>
 {
     @CommandLine.Option(names = {"-m", "--max"},
             description = "Max numbers of objects to generate/update (default = ${DEFAULT-VALUE}, keep going)")
@@ -48,7 +48,7 @@ public abstract class AbstractProducer extends AbstractBaseProducer<Integer, Obj
     }
 
     @Override
-    protected void produceLoop(KafkaProducer<Integer, Object> producer) throws IOException {
+    protected void produceLoop(KafkaProducer<Object, Object> producer) throws IOException {
         var terminal = TerminalBuilder.terminal();
         terminal.enterRawMode();
         var reader = terminal.reader();
@@ -81,8 +81,8 @@ public abstract class AbstractProducer extends AbstractBaseProducer<Integer, Obj
         System.out.println("Total produced = " + produced);
     }
 
-    private void singleProduce(KafkaProducer<Integer, Object> producer) {
-        ProducerRecord<Integer, Object> record = createRecord();
+    private void singleProduce(KafkaProducer<Object, Object> producer) {
+        ProducerRecord<Object, Object> record = createRecord();
         int valueSize = 0;
 
         Future<RecordMetadata> future = producer.send(record);
@@ -98,5 +98,5 @@ public abstract class AbstractProducer extends AbstractBaseProducer<Integer, Obj
         produced++;
     }
 
-    protected abstract ProducerRecord<Integer, Object> createRecord();
+    protected abstract ProducerRecord<Object, Object> createRecord();
 }
