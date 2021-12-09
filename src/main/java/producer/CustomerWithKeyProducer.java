@@ -1,12 +1,16 @@
 package producer;
 
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.IntegerSerializer;
 import picocli.CommandLine;
 import schema.Customer;
 import schema.CustomerId;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "CustomerWithKeyProducer",
@@ -25,6 +29,13 @@ public class CustomerWithKeyProducer extends AbstractProducer implements Callabl
         this.schemaRegistryURL = schemaRegistries;
         this.maxObjects = maxObjects;
         this.customerTopic = customerTopic;
+    }
+
+    @Override
+    protected void addProperties(Properties properties) {
+        super.addProperties(properties);
+
+        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
     }
 
     @Override
