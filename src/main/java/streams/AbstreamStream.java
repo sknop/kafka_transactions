@@ -60,7 +60,12 @@ public abstract class AbstreamStream extends AbstractBase {
     }
 
     protected KafkaStreams createStreams(Topology topology) {
-        createProperties();
+        return this.createStreams(topology, true);
+    }
+
+    protected KafkaStreams createStreams(Topology topology, boolean createProperties) {
+        if (createProperties)
+            createProperties();
 
         return new KafkaStreams(topology, properties);
     }

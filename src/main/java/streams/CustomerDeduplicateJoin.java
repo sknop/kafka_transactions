@@ -25,8 +25,6 @@ import java.util.concurrent.Callable;
 public class CustomerDeduplicateJoin extends AbstreamStream implements Callable<Integer>  {
     final static String CUSTOMER_TOPIC = "customer";
     final static String CUSTOMER_UNIQUE_TOPIC = "customer-unique-join";
-    final static String BOOTSTRAP_SERVERS = "localhost:9092";
-    final static String SCHEMA_REGISTRY_URL = "http://localhost:8081";
 
     @CommandLine.Option(names = {"--topic"},
             description = "Topic for the customer (default = ${DEFAULT-VALUE})")
@@ -53,6 +51,9 @@ public class CustomerDeduplicateJoin extends AbstreamStream implements Callable<
     private void consume() {
         StreamsBuilder builder = new StreamsBuilder();
 
+        // Create properties beforehand so that Serdes can be initialised before the topology is built
+        createProperties();
+
         KStream<Integer, Customer> existingCustomers = builder.stream(customerTopic);
 
         Map<String, String> changeLogConfigs = new HashMap<>();
@@ -63,7 +64,7 @@ public class CustomerDeduplicateJoin extends AbstreamStream implements Callable<
 
         Serde<Customer> customerSerde = new SpecificAvroSerde<>();
         Map<String, String> schemaConfig =
-                Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryURL);
+                Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, properties.getProperty(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG));
         customerSerde.configure(schemaConfig, false);
 
         KTable<Integer, Customer> uniqueCustomers = builder.table(uniqueTopic, Consumed.with(Serdes.Integer(), customerSerde),
@@ -87,7 +88,7 @@ public class CustomerDeduplicateJoin extends AbstreamStream implements Callable<
                 .filter( ((key, value) -> (value != null)))
                 .to(uniqueTopic);
 
-        KafkaStreams streams = createStreams(builder.build());
+        KafkaStreams streams = createStreams(builder.build(), false);
         streams.start();
 
         // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
