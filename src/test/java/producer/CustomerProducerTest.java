@@ -17,11 +17,11 @@ public class CustomerProducerTest {
     public static Network network = Network.newNetwork();
 
     @Container
-    public static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:6.2.0"))
+    public static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.0.1"))
             .withNetwork(network);
 
     @Container
-    public static SchemaRegistryContainer schemaRegistry = new SchemaRegistryContainer(DockerImageName.parse("confluentinc/cp-schema-registry:6.2.0"))
+    public static SchemaRegistryContainer schemaRegistry = new SchemaRegistryContainer(DockerImageName.parse("confluentinc/cp-schema-registry:7.0.1"))
             .withKafka(kafka);
 
     @BeforeAll

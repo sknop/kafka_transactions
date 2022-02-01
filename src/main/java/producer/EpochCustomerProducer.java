@@ -15,13 +15,11 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.IntegerSerializer;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
-import org.apache.kafka.streams.KafkaStreams;
-import org.apache.kafka.streams.StreamsBuilder;
-import org.apache.kafka.streams.StreamsConfig;
-import org.apache.kafka.streams.Topology;
+import org.apache.kafka.streams.*;
 import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.state.KeyValueStore;
+import org.apache.kafka.streams.state.QueryableStoreType;
 import org.apache.kafka.streams.state.QueryableStoreTypes;
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 import schema.Customer;
@@ -118,8 +116,9 @@ public class EpochCustomerProducer {
     }
 
     private void produceWithStore(KafkaProducer<Integer, Object> producer, KTable<Integer, Customer> existingCustomers, KafkaStreams streams) {
-        String storeName = existingCustomers.queryableStoreName();
-        ReadOnlyKeyValueStore<Integer, Customer> keyValueStore = streams.store(storeName, QueryableStoreTypes.keyValueStore());
+        final String storeName = existingCustomers.queryableStoreName();
+        final QueryableStoreType<ReadOnlyKeyValueStore<Integer, Customer>> queryableStoreType = QueryableStoreTypes.keyValueStore();
+        ReadOnlyKeyValueStore<Integer, Customer> keyValueStore = streams.store(StoreQueryParameters.fromNameAndType(storeName, queryableStoreType).enableStaleStores());
 
         while(doProduce) {
             ProducerRecord<Integer, Object> record = createRecord(keyValueStore);
