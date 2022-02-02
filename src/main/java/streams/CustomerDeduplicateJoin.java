@@ -63,8 +63,9 @@ public class CustomerDeduplicateJoin extends AbstreamStream implements Callable<
         // changeLogConfigs.put("cleanup.policy", "compact,delete");
 
         Serde<Customer> customerSerde = new SpecificAvroSerde<>();
-        Map<String, String> schemaConfig =
-                Collections.singletonMap(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, properties.getProperty(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG));
+        Map<String, String> schemaConfig = new HashMap<>();
+        properties.forEach((key,value) -> schemaConfig.put(key.toString(),value.toString()));
+
         customerSerde.configure(schemaConfig, false);
 
         KTable<Integer, Customer> uniqueCustomers = builder.table(uniqueTopic, Consumed.with(Serdes.Integer(), customerSerde),
