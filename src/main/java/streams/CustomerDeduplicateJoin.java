@@ -34,6 +34,10 @@ public class CustomerDeduplicateJoin extends AbstreamStream implements Callable<
             description = "Topic for the unique (default = ${DEFAULT-VALUE})")
     private String uniqueTopic = CUSTOMER_UNIQUE_TOPIC;
 
+    @CommandLine.Option(names = {"--state-dir"},
+            description = "Custom location of the state dir (instead of /tmp/kafka-streams")
+    private String stateDir;
+
     public CustomerDeduplicateJoin() {
     }
 
@@ -41,6 +45,10 @@ public class CustomerDeduplicateJoin extends AbstreamStream implements Callable<
     protected void addConsumerProperties(Properties properties) {
         properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
         properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
+
+        if (stateDir != null) {
+            properties.put(StreamsConfig.STATE_DIR_CONFIG, stateDir);
+        }
     }
 
     @Override
