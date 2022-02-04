@@ -35,7 +35,7 @@ public class CustomerDeduplicateJoin extends AbstreamStream implements Callable<
     private String uniqueTopic = CUSTOMER_UNIQUE_TOPIC;
 
     @CommandLine.Option(names = {"--state-dir"},
-            description = "Custom location of the state dir (instead of /tmp/kafka-streams")
+            description = "Custom location of the state dir (instead of /tmp/kafka-streams)")
     private String stateDir;
 
     public CustomerDeduplicateJoin() {
