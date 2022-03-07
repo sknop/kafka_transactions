@@ -26,10 +26,10 @@ public abstract class AbstreamStream extends AbstractBase {
     protected void createProperties() {
         properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, DEFAULT_BOOTSTRAP_SERVERS);
         properties.put(KafkaAvroSerializerConfig.SCHEMA_REGISTRY_URL_CONFIG, DEFAULT_SCHEMA_REGISTRY);
+        properties.put(StreamsConfig.APPLICATION_ID_CONFIG, getApplicationName());
 
         readConfigFile(properties);
 
-        properties.put(StreamsConfig.APPLICATION_ID_CONFIG, getApplicationName());
         if (bootstrapServers != null) {
             properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         }
