@@ -1,0 +1,6 @@
+@namespace("schema")
+protocol UserProtocol {
+  record User {
+    string userId;
+  }
+}
