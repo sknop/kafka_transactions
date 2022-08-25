@@ -10,16 +10,16 @@
 
     <properties>
         <java.version>11</java.version>
-        <confluent.version>7.0.1</confluent.version>
-        <kafka.version>3.0.0</kafka.version>
-        <avro.version>1.10.1</avro.version>
-        <slf4j.version>1.7.30</slf4j.version>
-        <logback.version>1.2.10</logback.version>
-        <picocli.version>4.6.1</picocli.version>
-        <jline.version>3.18.0</jline.version>
-        <junit.jupiter.version>5.4.0</junit.jupiter.version>
-        <testcontainer.version>1.15.3</testcontainer.version>
-        <jackson.version>2.13.1</jackson.version>
+        <confluent.version>7.2.1</confluent.version>
+        <kafka.version>3.2.1</kafka.version>
+        <avro.version>1.11.0</avro.version>
+        <slf4j.version>1.7.36</slf4j.version>
+        <logback.version>1.2.11</logback.version>
+        <picocli.version>4.6.3</picocli.version>
+        <jline.version>3.21.0</jline.version>
+        <junit.jupiter.version>5.9.0</junit.jupiter.version>
+        <testcontainer.version>1.17.3</testcontainer.version>
+        <jackson.version>2.13.3</jackson.version>
         <!-- <nitrite.version>3.0.0</nitrite.version> -->
         <!-- Maven properties for compilation -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -85,7 +85,7 @@
         <dependency>
             <groupId>net.sourceforge.argparse4j</groupId>
             <artifactId>argparse4j</artifactId>
-            <version>0.8.1</version>
+            <version>0.9.0</version>
         </dependency>
         <dependency>
             <groupId>org.jline</groupId>
