@@ -12,9 +12,9 @@
         <java.version>11</java.version>
         <confluent.version>7.2.1</confluent.version>
         <kafka.version>3.2.1</kafka.version>
-        <avro.version>1.11.0</avro.version>
-        <slf4j.version>1.7.36</slf4j.version>
-        <logback.version>1.2.11</logback.version>
+        <avro.version>1.11.1</avro.version>
+        <slf4j.version>2.0.2</slf4j.version>
+        <logback.version>1.4.1</logback.version>
         <picocli.version>4.6.3</picocli.version>
         <jline.version>3.21.0</jline.version>
         <junit.jupiter.version>5.9.0</junit.jupiter.version>
@@ -56,6 +56,11 @@
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-streams</artifactId>
             <version>${kafka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>timestamp-interceptor</artifactId>
+            <version>${confluent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.avro</groupId>
