@@ -1,24 +1,17 @@
 package streams;
 
 import common.SerdeGenerator;
-import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import org.apache.kafka.clients.admin.Admin;
-import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.KafkaAdminClient;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
-import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.*;
 import picocli.CommandLine;
 import schema.Customer;
 import schema.CustomerWithRegion;
 import schema.Region;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
@@ -33,15 +26,15 @@ public class CustomerJoinRegionStream extends AbstreamStream implements Callable
 
     @CommandLine.Option(names = {"--customer-topic"},
             description = "Topic for the object (default = ${DEFAULT-VALUE})")
-    private String customerTopic = CUSTOMER_TOPIC;
+    private final String customerTopic = CUSTOMER_TOPIC;
 
     @CommandLine.Option(names = {"--region-topic"},
             description = "Topic for the region (default = ${DEFAULT-VALUE})")
-    private String regionTopic = REGION_TOPIC;
+    private final String regionTopic = REGION_TOPIC;
 
     @CommandLine.Option(names = {"--region-with-region-topic"},
             description = "Topic for the customer-with-region (default = ${DEFAULT-VALUE})")
-    private String customerWithRegion = CUSTOMER_WITH_REGION_TOPIC;
+    private final String customerWithRegion = CUSTOMER_WITH_REGION_TOPIC;
 
     public CustomerJoinRegionStream() {
     }
@@ -49,6 +42,20 @@ public class CustomerJoinRegionStream extends AbstreamStream implements Callable
     @Override
     protected void addConsumerProperties(Properties properties) {
         // pass
+    }
+
+    private List<Integer> getPartitions() {
+        try(Admin adminClient = Admin.create(properties)) {
+            var results = adminClient.describeTopics(Arrays.asList(regionTopic, customerTopic));
+            var topicValues = results.topicNameValues();
+
+            var regionPartitions = topicValues.get(regionTopic).get().partitions().size();
+            var customerPartitions = topicValues.get(customerTopic).get().partitions().size();
+
+            return Arrays.asList(regionPartitions, customerPartitions);
+        } catch (ExecutionException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -59,27 +66,10 @@ public class CustomerJoinRegionStream extends AbstreamStream implements Callable
     private void consume() {
         createProperties();
 
-        int regionPartitions = 0;
-        int customerPartitions = 0;
+        var partitionCount = getPartitions();
 
-        try(Admin adminClient = Admin.create(properties)) {
-            var results = adminClient.describeTopics(Arrays.asList(regionTopic, customerTopic));
-            var topicValues = results.topicNameValues();
-            for (var entry : topicValues.entrySet()) {
-                if (entry.getKey().equals(regionTopic)) {
-                    var topicDescription = entry.getValue().get();
-                    regionPartitions = topicDescription.partitions().size();
-                }
-                if (entry.getKey().equals(customerTopic)) {
-                    var topicDescription = entry.getValue().get();
-                    customerPartitions = topicDescription.partitions().size();
-                }
-            }
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        int regionPartitions = partitionCount.get(0);
+        int customerPartitions = partitionCount.get(1);
 
         StreamsBuilder builder = new StreamsBuilder();
 
@@ -113,7 +103,7 @@ public class CustomerJoinRegionStream extends AbstreamStream implements Callable
         existingCustomers.selectKey((k, v) -> v.getRegion(), Named.as("customer-by-region"))
                 .repartition(repartitioned)
                 .join(regions, valueJoiner, joiner)
-                .to(customerWithRegion, Produced.with(Serdes.String(), SerdeGenerator.<CustomerWithRegion>getSerde(properties)));
+                .to(customerWithRegion, Produced.with(Serdes.String(), SerdeGenerator.getSerde(properties)));
 
         KafkaStreams streams = createStreams(builder.build());
 
