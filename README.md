@@ -77,3 +77,19 @@ Highest object ID to generate/update (default = 1000)
 Topic for the customer (default = customer)
 -h, --help               Show this help message and exit.
 -V, --version            Print version information and exit.
+
+----
+
+Producer Region (producer.RegionProducer) for reference by customer object
+
+----
+
+New Stream CustomerJoinRegionStream
+
+
+Requires target topic with the same number of partitions as the region (does that make sense)
+Requires lots of ACL permissions to run:
+
+cluster DESCRIBE and IDEMPOTENT_WRITE
+topic customer* READ, DESCRIBE, WRITE, CREATE
+topic region READ, WRITE, DESCRIBE
