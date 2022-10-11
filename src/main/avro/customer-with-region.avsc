@@ -1,6 +1,6 @@
 {
   "type" : "record",
-  "name" : "Customer",
+  "name" : "CustomerWithRegion",
   "namespace" : "schema",
   "fields" : [ {
       "name" : "customerId",
@@ -19,22 +19,17 @@
       "type" : "string",
       "doc"  : "Email address of user"
   }, {
-        "name" : "update",
-        "type" : "string",
-        "doc"  : "Update timestamp (as a string)"
-  }, {
         "name" : "age",
         "type" : "int",
         "doc" : "Age of user"
   }, {
-        "name" : "region",
+        "name" : "regionName",
         "type" : "string",
         "doc" : "Region the customer is from"
-  },
-  {
-         "name" : "epoch",
-         "type" : "int",
-         "doc"  : "How often has this user been updated?"
-   } ],
-  "doc:" : "Schema of user"
+  }, {
+        "name" : "areaCode",
+        "type" : "string",
+        "doc"  : "Phone area code"
+      }],
+  "doc:" : "Customer with Region details"
 }

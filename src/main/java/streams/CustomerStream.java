@@ -12,8 +12,6 @@ import schema.Customer;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
-import static java.lang.Runtime.*;
-
 @CommandLine.Command(name = "CustomerStream",
         version = "CustomerStream 1.0",
         description = "Reads Customer objects in Avro format from a stream.")

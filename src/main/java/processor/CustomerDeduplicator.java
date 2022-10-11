@@ -97,6 +97,8 @@ public class CustomerDeduplicator {
                         existingCustomer.getLastName(),
                         existingCustomer.getEmail(),
                         updatedCustomer.getUpdate(),
+                        updatedCustomer.getAge(),
+                        updatedCustomer.getRegion(),
                         existingCustomer.getEpoch() + 1
                 );
                 output = KeyValue.pair(key, (V) newCustomer);

@@ -1,0 +1,23 @@
+{
+  "type" : "record",
+  "name" : "Region",
+  "namespace" : "schema",
+  "fields" : [ {
+       "name" : "identifier",
+       "type" : "string",
+       "doc"  : "Short name of the region"
+   }, {
+        "name" : "longName",
+        "type" : "string",
+        "doc"  : "Full name of the region"
+  }, {
+       "name" : "areaCode",
+       "type" : "string",
+       "doc"  : "Phone area code"
+  }, {
+    "name" : "update",
+    "type" : "string",
+    "doc" : "Update timestamp"
+  }],
+   "doc:" : "Region for reference by customer"
+}

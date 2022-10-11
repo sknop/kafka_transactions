@@ -11,7 +11,6 @@ import picocli.CommandLine;
 
 import java.io.*;
 import java.util.Properties;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -25,16 +24,11 @@ public abstract class AbstractProducer extends AbstractBaseProducer<Object, Obje
             description = "If enabled, will produce one event and wait for <Return>")
     protected boolean interactive;
 
-    @CommandLine.Option(names = {"-v", "--verbose"},
-            description = "If enabled, will print out every message created")
-    protected boolean verbose = false;
-
     @CommandLine.Option(names = {"-l", "--largest"},
             description = "Highest object ID to generate/update (default = ${DEFAULT-VALUE})")
     protected int largestId = 1000;
 
     protected int produced = 0;
-    protected Random random = new Random();
 
     public AbstractProducer() {
     }

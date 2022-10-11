@@ -1,5 +1,6 @@
 package producer;
 
+import common.RegionCode;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -12,6 +13,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+
 
 @CommandLine.Command(name = "CustomerWithKeyProducer",
         version = "CustomerWithKeyProducer 1.0",
@@ -51,10 +53,14 @@ public class CustomerWithKeyProducer extends AbstractProducer implements Callabl
         String lastName = "last_" + id;
         String email = "email_" + id + "@email.com";
 
+        var age = 18 + id % 50;
+
         int epoch = 1;
+        var region = RegionCode.REGION_CODES[ id % RegionCode.REGION_CODES.length].identifier();
+
 
         CustomerId customerId = new CustomerId(id);
-        Customer customer = new Customer(id, firstName, lastName, email, date, epoch);
+        Customer customer = new Customer(id, firstName, lastName, email, date, age, region, epoch);
 
         return new ProducerRecord<>(customerTopic, customerId, customer);
     }

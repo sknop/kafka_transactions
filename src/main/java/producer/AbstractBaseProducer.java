@@ -3,9 +3,11 @@ package producer;
 import common.AbstractBase;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import picocli.CommandLine;
 
 import java.io.IOException;
 import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
@@ -13,6 +15,11 @@ public abstract class AbstractBaseProducer<KeyType,ValueType> extends AbstractBa
     protected Logger logger = Logger.getLogger(AbstractBaseProducer.class.getName());
 
     protected boolean doProduce = true;
+    protected Random random = new Random();
+
+    @CommandLine.Option(names = {"-v", "--verbose"},
+            description = "If enabled, will print out every message created")
+    protected boolean verbose = false;
 
     protected KafkaProducer<KeyType, ValueType> createProducer() {
         logger.info("Using properties " + properties);
