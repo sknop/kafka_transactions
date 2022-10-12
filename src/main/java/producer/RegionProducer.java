@@ -27,6 +27,10 @@ public class RegionProducer extends AbstractBaseProducer<String, Region> {
             defaultValue = "region")
     private String regionTopic;
 
+    @CommandLine.Option(names = {"--delay"},
+            description = "Time delay between producing each event (in ms)")
+    private long delay = 0;
+
     @Override
     protected void addProperties(Properties properties) {
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -69,6 +73,14 @@ public class RegionProducer extends AbstractBaseProducer<String, Region> {
 
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
+            }
+
+            if (delay > 0) {
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
 
