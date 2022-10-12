@@ -85,8 +85,6 @@ public class CustomerJoinGlobalRegionStream extends AbstreamStream implements Ca
 
         KafkaStreams streams = createStreams(build);
 
-        var x = builder.build().describe();
-
         streams.setStateListener((newState, oldState) -> System.out.println("*** Changed state from " +oldState + " to " + newState));
         streams.start();
 
