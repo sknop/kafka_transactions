@@ -45,12 +45,13 @@ public abstract class AbstreamStream extends AbstractBase {
 
         // properties.put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, StreamsConfig.EXACTLY_ONCE);
 
+
         if (monitoringInterceptors) {
             properties.put(
-                    StreamsConfig.MAIN_CONSUMER_PREFIX + ConsumerConfig.INTERCEPTOR_CLASSES_CONFIG,
+                    StreamsConfig.consumerPrefix(ConsumerConfig.INTERCEPTOR_CLASSES_CONFIG),
                     "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor");
-            properties.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
-            properties.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 100);
+//            properties.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
+//            properties.put(StreamsConfig.COMMIT_INTERVAL_MS_CONFIG, 100);
         }
 
         //        properties.put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG,

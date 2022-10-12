@@ -22,6 +22,7 @@ public class CustomerJoinGlobalRegionStream extends AbstreamStream implements Ca
     final static String CUSTOMER_TOPIC = "customer";
     final static String REGION_TOPIC = "region";
     final static String CUSTOMER_WITH_GLOBAL_REGION_TOPIC = "customer-with-global-region";
+    final static String REGION_GLOBAL_TABLE = "regions-global-table";
 
     @CommandLine.Option(names = {"--customer-topic"},
             description = "Topic for the object (default = ${DEFAULT-VALUE})")
@@ -54,23 +55,23 @@ public class CustomerJoinGlobalRegionStream extends AbstreamStream implements Ca
         StreamsBuilder builder = new StreamsBuilder();
 
         var regions = builder.globalTable(regionTopic,
-                                Materialized.<String,Region, KeyValueStore<Bytes,byte[]>>as("regions-global-table").
-                                        withKeySerde(Serdes.String()).
-                                        withValueSerde(SerdeGenerator.getSerde(properties)));
+                Materialized.<String, Region, KeyValueStore<Bytes, byte[]>>as(REGION_GLOBAL_TABLE).
+                        withKeySerde(Serdes.String()).
+                        withValueSerde(SerdeGenerator.getSerde(properties)));
 
         KStream<Integer, Customer> existingCustomers = builder.stream(customerTopic,
                 Consumed.with(Serdes.Integer(), SerdeGenerator.getSerde(properties))
         );
 
         ValueJoiner<Customer, Region, CustomerWithRegion> valueJoiner =
-                (customer, region) -> new CustomerWithRegion(
-                        customer.getCustomerId(),
-                        customer.getFirstName(),
-                        customer.getLastName(),
-                        customer.getEmail(),
-                        customer.getAge(),
-                        region.getLongName(),
-                        region.getAreaCode());
+                (customer, region) -> CustomerWithRegion.newBuilder()
+                        .setCustomerId(customer.getCustomerId())
+                        .setFirstName(customer.getFirstName())
+                        .setLastName(customer.getLastName())
+                        .setEmail(customer.getEmail())
+                        .setAge(customer.getAge())
+                        .setRegionName(region.getLongName())
+                        .setAreaCode(region.getAreaCode()).build();
 
         KeyValueMapper<Integer, Customer, String> keyValueMapper = (key, customer) -> customer.getRegion();
 
@@ -78,11 +79,18 @@ public class CustomerJoinGlobalRegionStream extends AbstreamStream implements Ca
                 .peek((k,v) -> System.out.println("Peeked " + k + " with value " + v))
                 .to(customerWithGlobalRegion, Produced.with(Serdes.Integer(), SerdeGenerator.getSerde(properties)));
 
-        KafkaStreams streams = createStreams(builder.build());
+        var build = builder.build();
+        var description = build.describe();
+        System.out.println(description);
+
+        KafkaStreams streams = createStreams(build);
+
+        var x = builder.build().describe();
 
         streams.setStateListener((newState, oldState) -> System.out.println("*** Changed state from " +oldState + " to " + newState));
         streams.start();
 
+        // TODO: replace by property
         if (scale > 1) {
             for (var threads = 1; threads < scale; threads++) {
                 logger.info(String.format("Increased thread count to %d", threads));
