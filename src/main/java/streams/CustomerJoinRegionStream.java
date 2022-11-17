@@ -26,15 +26,15 @@ public class CustomerJoinRegionStream extends AbstreamStream implements Callable
 
     @CommandLine.Option(names = {"--customer-topic"},
             description = "Topic for the object (default = ${DEFAULT-VALUE})")
-    private final String customerTopic = CUSTOMER_TOPIC;
+    private String customerTopic = CUSTOMER_TOPIC;
 
     @CommandLine.Option(names = {"--region-topic"},
             description = "Topic for the region (default = ${DEFAULT-VALUE})")
-    private final String regionTopic = REGION_TOPIC;
+    private String regionTopic = REGION_TOPIC;
 
     @CommandLine.Option(names = {"--customer-with-region-topic"},
             description = "Topic for the customer-with-region (default = ${DEFAULT-VALUE})")
-    private final String customerWithRegion = CUSTOMER_WITH_REGION_TOPIC;
+    private String customerWithRegion = CUSTOMER_WITH_REGION_TOPIC;
 
     public CustomerJoinRegionStream() {
     }
