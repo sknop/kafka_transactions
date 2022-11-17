@@ -1,6 +1,10 @@
 # kafka_transactions
 Kafka streams and transaction tests
 
+Requirements:
+
+You will need at least Java 17 installed to be able to compile und run these examples.
+To compile it, you will need 
 Usage
 
 Create a topic for testing, by default called 'customer'.
