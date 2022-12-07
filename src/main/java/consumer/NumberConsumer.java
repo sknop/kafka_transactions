@@ -9,6 +9,7 @@ import picocli.CommandLine;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 
@@ -29,6 +30,11 @@ public class NumberConsumer extends AbstractBaseConsumer<Void, Long> {
             description = "Commit asynchronously (default = ${DEFAULT-VALUE}")
     private boolean async = false;
     private Duration duration = Duration.ofMillis(10000);
+
+    @Override
+    protected Collection<String> getTopicsList() {
+        return Arrays.asList(numberTopic);
+    }
 
     @Override
     protected void subscribe(KafkaConsumer<Void, Long> consumer) {

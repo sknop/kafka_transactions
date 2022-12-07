@@ -5,6 +5,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import picocli.CommandLine;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
@@ -44,6 +45,8 @@ public abstract class AbstractBaseConsumer<KeyType,ValueType> extends AbstractBa
 
         consumer.close();
     }
+
+    protected abstract Collection<String> getTopicsList();
 
     protected abstract void subscribe(KafkaConsumer<KeyType, ValueType> consumer);
     protected abstract int consumeBatch(KafkaConsumer<KeyType,ValueType> consumer);

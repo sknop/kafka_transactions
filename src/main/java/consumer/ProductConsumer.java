@@ -11,6 +11,7 @@ import schema.Product;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Properties;
 
 @CommandLine.Command(name = "ProductConsumer",
@@ -29,6 +30,11 @@ public class ProductConsumer extends AbstractBaseConsumer<Integer, Product> {
             description = "Commit asynchronously (default = ${DEFAULT-VALUE})")
     private boolean async = false;
     private Duration duration = Duration.ofMillis(10000);
+
+    @Override
+    protected Collection<String> getTopicsList() {
+        return Arrays.asList(productTopic);
+    }
 
     @Override
     protected void subscribe(KafkaConsumer<Integer, Product> consumer) {
