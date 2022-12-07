@@ -20,7 +20,7 @@ import java.util.Properties;
 public class CustomerConsumer extends AbstractBaseConsumer<Integer, Customer> {
     @CommandLine.Option(names = {"--customer-topic"},
             description = "Topic for the customers (default = ${DEFAULT-VALUE})")
-    private String customerTopic = "product";
+    private String customerTopic = "customer";
 
     @CommandLine.Option(names = {"--single"},
             description = "Commit each message (default = false)")
