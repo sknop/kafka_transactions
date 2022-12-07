@@ -1,7 +1,9 @@
 package consumer;
 
 import common.AbstractBase;
+import org.apache.kafka.clients.consumer.ConsumerRebalanceListener;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.TopicPartition;
 import picocli.CommandLine;
 
 import java.io.IOException;
@@ -24,8 +26,28 @@ public abstract class AbstractBaseConsumer<KeyType,ValueType> extends AbstractBa
         return new KafkaConsumer<>(properties);
     }
 
+
+
     private void consume() throws IOException{
         createProperties();
+
+        var consumerBalanceListener = new ConsumerRebalanceListener() {
+            @Override
+            public void onPartitionsRevoked(Collection<TopicPartition> collection) {
+                System.out.println("*** Partitions revoked : " + collection.toString());
+            }
+
+            @Override
+            public void onPartitionsAssigned(Collection<TopicPartition> collection) {
+                System.out.println("*** Partitions assigned : " + collection.toString());
+            }
+
+            @Override
+            public void onPartitionsLost(Collection<TopicPartition> partitions) {
+                System.out.println("*** Partitions lost : " + partitions.toString());
+                ConsumerRebalanceListener.super.onPartitionsLost(partitions);
+            }
+        };
 
         KafkaConsumer<KeyType,ValueType> consumer = createConsumer();
 
@@ -34,7 +56,8 @@ public abstract class AbstractBaseConsumer<KeyType,ValueType> extends AbstractBa
             doConsume = false;
         }));
 
-        subscribe(consumer);
+        consumer.subscribe(getTopicsList(), consumerBalanceListener);
+
         while (doConsume) {
             messagesRead += consumeBatch(consumer);
             if (maxMessages > 0 && messagesRead > maxMessages) {
