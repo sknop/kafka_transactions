@@ -2,7 +2,6 @@ package producer;
 
 import common.AbstractBase;
 import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import picocli.CommandLine;
 
 import java.io.IOException;
@@ -28,14 +27,6 @@ public abstract class AbstractBaseProducer<KeyType,ValueType> extends AbstractBa
 
     protected void addProperties(Properties properties) {
         super.addProperties(properties);
-
-        if (monitoringInterceptors) {
-            properties.put(ProducerConfig.INTERCEPTOR_CLASSES_CONFIG,
-                    "io.confluent.monitoring.clients.interceptor.MonitoringProducerInterceptor");
-            properties.put("confluent.monitoring.interceptor.bootstrap.servers", properties.get(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG));
-            properties.put("confluent.monitoring.interceptor.timeout.ms", 3000);
-            properties.put("confluent.monitoring.interceptor.publishMs", 10000);
-        }
     }
 
     protected final void produce() throws IOException {

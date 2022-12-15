@@ -3,7 +3,6 @@ package producer;
 import common.RegionCode;
 import common.TimestampProvider;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -20,10 +19,6 @@ public class RegionProducer extends AbstractProducer {
             description = "Topic for the regions (default = ${DEFAULT-VALUE})",
             defaultValue = "region")
     private String regionTopic;
-
-    @CommandLine.Option(names = {"--delay"},
-            description = "Time delay between producing each event (in ms)")
-    private long delay = 0;
 
     @Override
     protected void addProperties(Properties properties) {
@@ -46,13 +41,6 @@ public class RegionProducer extends AbstractProducer {
         String date = TimestampProvider.currentTimestamp();
 
         Region newRegion = new Region(code, longName, areaCode, date);
-        if (delay > 0) {
-            try {
-                Thread.sleep(delay);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
 
         return new ProducerRecord<>(regionTopic, code, newRegion);
     }

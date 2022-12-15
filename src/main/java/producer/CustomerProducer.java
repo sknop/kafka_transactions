@@ -8,13 +8,12 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.IntegerSerializer;
 import picocli.CommandLine;
 import schema.Customer;
-import schema.Region;
 
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "CustomerProducer",
-        version = "CustomerProducer 1.0",
+        version = "CustomerProducer 1.1",
         description = "Produces Customer objects in Avro format, either a fixed amount or continuously.")
 public class CustomerProducer extends AbstractProducer implements Callable<Integer> {
     @CommandLine.Option(names = {"--customer-topic"},
@@ -68,6 +67,5 @@ public class CustomerProducer extends AbstractProducer implements Callable<Integ
             System.exit(1);
         }
     }
-
 }
 

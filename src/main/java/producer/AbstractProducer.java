@@ -1,11 +1,8 @@
 package producer;
 
-import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import org.apache.kafka.clients.producer.*;
-import org.apache.kafka.common.serialization.IntegerSerializer;
 import org.jline.terminal.TerminalBuilder;
 import picocli.CommandLine;
-import schema.Region;
 
 import java.io.*;
 import java.util.Properties;
@@ -24,6 +21,10 @@ public abstract class AbstractProducer extends AbstractBaseProducer<Object, Obje
             description = "Highest object ID to generate/update (default = ${DEFAULT-VALUE})")
     protected int largestId = 1000;
 
+    @CommandLine.Option(names = {"--delay"},
+            description = "Time delay between producing each event (in ms)")
+    protected long delay = 0;
+
     protected int produced = 0;
 
     public AbstractProducer() {
@@ -36,35 +37,34 @@ public abstract class AbstractProducer extends AbstractBaseProducer<Object, Obje
 
     @Override
     protected void produceLoop(KafkaProducer<Object, Object> producer) throws IOException {
-        var terminal = TerminalBuilder.terminal();
-        terminal.enterRawMode();
-        var reader = terminal.reader();
+        try (var terminal = TerminalBuilder.terminal()) {
+            terminal.enterRawMode();
+            var reader = terminal.reader();
 
-        int c = 0;
-        if (maxObjects == -1) {
-            while (doProduce && c != 'q') {
-                singleProduce(producer);
+            int c = 0;
+            if (maxObjects == -1) {
+                while (doProduce && c != 'q') {
+                    singleProduce(producer);
 
-                if (interactive) {
-                    System.out.println("Press any key to continue ...(or 'q' to quit)");
+                    if (interactive) {
+                        System.out.println("Press any key to continue ...(or 'q' to quit)");
 
-                    c = reader.read();
+                        c = reader.read();
+                    }
+                }
+            } else {
+                for (int i = 0; i < maxObjects; i++) {
+                    singleProduce(producer);
+                    if (interactive) {
+                        System.out.println("Press any key to continue ... (or 'q' to quit)");
+
+                        c = reader.read();
+                    }
+                    if (!doProduce || c == 'q')
+                        break;
                 }
             }
         }
-        else {
-            for (int i = 0; i < maxObjects; i++) {
-                singleProduce(producer);
-                if (interactive) {
-                    System.out.println("Press any key to continue ... (or 'q' to quit)");
-
-                    c = reader.read();
-                }
-                if (!doProduce || c == 'q')
-                    break;
-            }
-        }
-
         System.out.println("Total produced = " + produced);
     }
 
@@ -86,6 +86,14 @@ public abstract class AbstractProducer extends AbstractBaseProducer<Object, Obje
         }
         else {
             producer.send(record); // ignore the record
+        }
+
+        if (delay > 0) {
+            try {
+                Thread.sleep(delay);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         produced++;

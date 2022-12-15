@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @CommandLine.Command(
+        scope = CommandLine.ScopeType.INHERIT,
         synopsisHeading = "%nUsage:%n",
         descriptionHeading   = "%nDescription:%n%n",
         parameterListHeading = "%nParameters:%n%n",
@@ -30,9 +31,6 @@ abstract public class AbstractBase {
     protected String bootstrapServers;
     @CommandLine.Option(names = {"--schema-registry"})
     protected String schemaRegistryURL;
-    @CommandLine.Option(names = {"--enable-monitoring-interceptor"},
-            description = "Enable MonitoringInterceptors (for Control Center)")
-    protected boolean monitoringInterceptors = false;
 
     public void readConfigFile(Properties properties) {
         if (configFile != null) {
