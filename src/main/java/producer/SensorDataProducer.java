@@ -1,7 +1,11 @@
 package producer;
 
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.IntegerSerializer;
 import picocli.CommandLine;
+import schema.Region;
 import schema.SensorData;
 
 import java.time.ZonedDateTime;
@@ -21,7 +25,15 @@ public class SensorDataProducer extends AbstractProducer implements Callable<Int
     public SensorDataProducer() {  }
 
     @Override
-    protected ProducerRecord<Object,Object> createRecord() {
+    protected void addProperties(Properties properties) {
+        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
+        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+
+        super.addProperties(properties);
+    }
+
+    @Override
+    protected ProducerRecord<Object, Object> createRecord() {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss xxx");
         ZonedDateTime now = ZonedDateTime.now();
 

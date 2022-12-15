@@ -2,12 +2,15 @@ package producer;
 
 import common.RegionCode;
 import common.TimestampProvider;
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.IntegerSerializer;
 import picocli.CommandLine;
 import schema.Customer;
+import schema.Region;
 
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "CustomerProducer",
@@ -29,7 +32,15 @@ public class CustomerProducer extends AbstractProducer implements Callable<Integ
     }
 
     @Override
-    protected ProducerRecord<Object,Object> createRecord() {
+    protected void addProperties(Properties properties) {
+        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
+        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+
+        super.addProperties(properties);
+    }
+
+    @Override
+    protected ProducerRecord<Object, Object> createRecord() {
         String date = TimestampProvider.currentTimestamp();
 
         int customerId = random.nextInt(largestId) + 1;

@@ -1,11 +1,15 @@
 package producer;
 
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.IntegerSerializer;
 import picocli.CommandLine;
 
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
+import schema.Region;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -36,6 +40,14 @@ public class GenericOrderProducer extends AbstractProducer implements Callable<I
     private Schema schema;
 
     public GenericOrderProducer() {
+    }
+
+    @Override
+    protected void addProperties(Properties properties) {
+        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
+        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+
+        super.addProperties(properties);
     }
 
     @Override

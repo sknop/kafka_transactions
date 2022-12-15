@@ -1,12 +1,13 @@
 package producer;
 
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.IntegerSerializer;
 import picocli.CommandLine;
-import schema.Customer;
 import schema.PricePoint;
+import schema.Region;
 
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ThreadLocalRandom;
@@ -23,7 +24,7 @@ public class PricePointProducer extends AbstractProducer implements Callable<Int
     public PricePointProducer() {  }
 
     @Override
-    protected ProducerRecord<Object,Object> createRecord() {
+    protected ProducerRecord<Object, Object> createRecord() {
         int productId = random.nextInt(largestId) + 1;
         long date = System.currentTimeMillis();
         float price = (float) ThreadLocalRandom.current().nextDouble(0.0,100.0);
@@ -31,6 +32,14 @@ public class PricePointProducer extends AbstractProducer implements Callable<Int
         PricePoint pricePoint = new PricePoint(productId, price, date);
 
         return new ProducerRecord<>(pricepointTopic, productId, pricePoint);
+    }
+
+    @Override
+    protected void addProperties(Properties properties) {
+        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
+        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+
+        super.addProperties(properties);
     }
 
     @Override

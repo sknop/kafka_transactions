@@ -1,14 +1,14 @@
 package producer;
 
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.IntegerSerializer;
 import picocli.CommandLine;
-import schema.Customer;
 import schema.OrderItem;
+import schema.Region;
 
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Properties;
-import java.util.Random;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "OrderItemProducer",
@@ -22,9 +22,16 @@ public class OrderItemProducer extends AbstractProducer implements Callable<Inte
 
     public OrderItemProducer() {  }
 
+    @Override
+    protected void addProperties(Properties properties) {
+        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
+        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+
+        super.addProperties(properties);
+    }
 
     @Override
-    protected ProducerRecord<Object,Object> createRecord() {
+    protected ProducerRecord<Object, Object> createRecord() {
         var productId = random.nextInt(100);
         var orderId = random.nextInt(100000);
         var count = random.nextInt(10) + 1;

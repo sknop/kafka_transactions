@@ -8,6 +8,7 @@ import org.apache.kafka.common.serialization.IntegerSerializer;
 import picocli.CommandLine;
 import schema.Customer;
 import schema.CustomerId;
+import schema.Region;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -38,10 +39,11 @@ public class CustomerWithKeyProducer extends AbstractProducer implements Callabl
         super.addProperties(properties);
 
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
     }
 
     @Override
-    protected ProducerRecord<Object,Object> createRecord() {
+    protected ProducerRecord<Object, Object> createRecord() {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss xxx");
         ZonedDateTime now = ZonedDateTime.now();
 

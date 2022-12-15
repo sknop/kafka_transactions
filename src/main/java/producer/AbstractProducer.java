@@ -1,18 +1,14 @@
 package producer;
 
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.IntegerSerializer;
 import org.jline.terminal.TerminalBuilder;
 import picocli.CommandLine;
+import schema.Region;
 
 import java.io.*;
 import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 public abstract class AbstractProducer extends AbstractBaseProducer<Object, Object>
 {
@@ -35,9 +31,6 @@ public abstract class AbstractProducer extends AbstractBaseProducer<Object, Obje
 
     @Override
     protected void addProperties(Properties properties) {
-        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
-        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
-
         super.addProperties(properties);
     }
 
@@ -77,18 +70,24 @@ public abstract class AbstractProducer extends AbstractBaseProducer<Object, Obje
 
     private void singleProduce(KafkaProducer<Object, Object> producer) {
         ProducerRecord<Object, Object> record = createRecord();
-        int valueSize = 0;
 
-        Future<RecordMetadata> future = producer.send(record);
-        try {
-            RecordMetadata result = future.get();
-            valueSize = result.serializedValueSize();
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
+        if (verbose) {
+            producer.send(record, (recordMetadata, e) -> {
+                if (e != null) {
+                    e.printStackTrace();
+                }
+                else {
+                    var valueSize = recordMetadata.serializedValueSize();
+                    System.out.println("Produced ["
+                            + valueSize + "] at offset "
+                            + recordMetadata.offset() + " with data " + record);
+                }
+            });
+        }
+        else {
+            producer.send(record); // ignore the record
         }
 
-        if (verbose)
-            System.out.println("Produced [" +valueSize + "] " + record);
         produced++;
     }
 

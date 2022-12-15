@@ -1,10 +1,13 @@
 package producer;
 
+import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.IntegerSerializer;
 import picocli.CommandLine;
 import schema.Change;
+import schema.Region;
 import schema.Revision;
 
 import java.time.Instant;
@@ -58,7 +61,11 @@ public class TransactionalProducer extends AbstractProducer implements Callable<
 
     @Override
     protected void addProperties(Properties properties) {
+        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class);
+        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaAvroSerializer.class);
+
         properties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, transactionId);
+
         super.addProperties(properties);
     }
 
