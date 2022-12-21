@@ -78,9 +78,10 @@ public abstract class AbstractProducer extends AbstractBaseProducer<Object, Obje
                 }
                 else {
                     var valueSize = recordMetadata.serializedValueSize();
-                    System.out.println("Produced ["
-                            + valueSize + "] at offset "
-                            + recordMetadata.offset() + " with data " + record);
+                    System.out.println("Produced [" + valueSize
+                            + "] at offset " + recordMetadata.offset()
+                            + " in partition " + recordMetadata.partition()
+                            + " with data " + record);
                 }
             });
         }

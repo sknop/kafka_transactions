@@ -13,7 +13,8 @@ public record RegionCode(String identifier, String longName, String areaCode) {
             new RegionCode("PL", "Poland", "+48"),
             new RegionCode("IS", "Iceland", "+354"),
             new RegionCode("US", "United States of America", "+1"),
-            new RegionCode("IE", "Ireland", "+353")
+            new RegionCode("IE", "Ireland", "+353"),
+            new RegionCode("IN", "India", "+91")
     };
 
     public static RegionCode getRegion(int index) {
