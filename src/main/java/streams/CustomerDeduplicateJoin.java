@@ -1,5 +1,6 @@
 package streams;
 
+import common.SerdeGenerator;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import org.apache.kafka.common.serialization.Serde;
@@ -34,17 +35,13 @@ public class CustomerDeduplicateJoin extends AbstreamStream implements Callable<
             description = "Topic for the unique (default = ${DEFAULT-VALUE})")
     private String uniqueTopic = CUSTOMER_UNIQUE_TOPIC;
 
-    @CommandLine.Option(names = {"--state-dir"},
-            description = "Custom location of the state dir (instead of /tmp/kafka-streams)")
-    private String stateDir;
-
     public CustomerDeduplicateJoin() {
     }
 
     @Override
     protected void addConsumerProperties(Properties properties) {
-        properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
-        properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
+//        properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
+//        properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
 
         if (stateDir != null) {
             properties.put(StreamsConfig.STATE_DIR_CONFIG, stateDir);
@@ -62,24 +59,18 @@ public class CustomerDeduplicateJoin extends AbstreamStream implements Callable<
         // Create properties beforehand so that Serdes can be initialised before the topology is built
         createProperties();
 
-        KStream<Integer, Customer> existingCustomers = builder.stream(customerTopic);
+        KStream<Integer, Customer> existingCustomers = builder.stream(customerTopic, Consumed.with(Serdes.Integer(), SerdeGenerator.getSerde(properties)));
 
-        Map<String, String> changeLogConfigs = new HashMap<>();
-        // put any valid topic configs here
-        changeLogConfigs.put("segment.ms", "60000");
-        changeLogConfigs.put("segment.bytes", "100000");
-        // changeLogConfigs.put("cleanup.policy", "compact,delete");
+//        Map<String, String> changeLogConfigs = new HashMap<>();
+//        // put any valid topic configs here
+//        changeLogConfigs.put("segment.ms", "60000");
+//        changeLogConfigs.put("segment.bytes", "100000");
+//        // changeLogConfigs.put("cleanup.policy", "compact,delete");
 
-        Serde<Customer> customerSerde = new SpecificAvroSerde<>();
-        Map<String, String> schemaConfig = new HashMap<>();
-        properties.forEach((key,value) -> schemaConfig.put(key.toString(),value.toString()));
-
-        customerSerde.configure(schemaConfig, false);
-
-        KTable<Integer, Customer> uniqueCustomers = builder.table(uniqueTopic, Consumed.with(Serdes.Integer(), customerSerde),
+        KTable<Integer, Customer> uniqueCustomers = builder.table(uniqueTopic, Consumed.with(Serdes.Integer(), SerdeGenerator.getSerde(properties)),
                 Materialized.<Integer, Customer, KeyValueStore<Bytes, byte[]>>as("uniqueCustomerTableStore")
-                        .withLoggingEnabled(changeLogConfigs).
-                        withCachingEnabled()
+                        // .withLoggingEnabled(changeLogConfigs)
+                        .withCachingEnabled()
         );
 
         existingCustomers
@@ -95,7 +86,7 @@ public class CustomerDeduplicateJoin extends AbstreamStream implements Callable<
                 })
                 .peek((k,v) -> System.out.println("Peeked key = " + k + " value = " + v))
                 .filter( ((key, value) -> (value != null)))
-                .to(uniqueTopic);
+                .to(uniqueTopic, Produced.with(Serdes.Integer(), SerdeGenerator.getSerde(properties)));
 
         KafkaStreams streams = createStreams(builder.build(), false);
         streams.start();
