@@ -10,8 +10,8 @@
 
     <properties>
         <java.version>17</java.version>
-        <confluent.version>7.3.1</confluent.version>
-        <kafka.version>3.3.1</kafka.version>
+        <confluent.version>7.3.3</confluent.version>
+        <kafka.version>3.3.2</kafka.version>
         <avro.version>1.11.1</avro.version>
         <slf4j.version>2.0.5</slf4j.version>
         <logback.version>1.4.5</logback.version>
@@ -240,6 +240,12 @@
                         <param>^customer-(key|value)$</param>
                         <param>^region-(key|value)$</param>
                     </subjectPatterns>
+                    <compatibilityLevels/>
+                    <messagePath/>
+                    <outputPath/>
+                    <previousSchemaPaths/>
+                    <schemas/>
+                    <subjects/>
                 </configuration>
             </plugin>
         </plugins>
