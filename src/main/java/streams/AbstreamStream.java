@@ -19,6 +19,10 @@ public abstract class AbstreamStream extends AbstractBase {
             description = "If greater than 1, Stream app will increase threads to the number provided")
     protected int scale = 1;
 
+    @CommandLine.Option(names = {"--state-dir"},
+            description = "If set, use as the state.dir parameter for this stream")
+    protected String stateDir;
+
     public AbstreamStream() {
     }
 
@@ -38,6 +42,9 @@ public abstract class AbstreamStream extends AbstractBase {
         }
 
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        if (stateDir != null) {
+            properties.put(StreamsConfig.STATE_DIR_CONFIG, stateDir);
+        }
 
         // Specify default (de)serializers for record keys and for record values.
         // properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
