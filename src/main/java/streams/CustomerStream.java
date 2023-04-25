@@ -9,7 +9,6 @@ import picocli.CommandLine;
 import schema.Customer;
 
 import java.util.Properties;
-import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "CustomerStream",
         version = "CustomerStream 1.0",

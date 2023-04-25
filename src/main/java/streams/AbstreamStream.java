@@ -1,18 +1,12 @@
 package streams;
 
 import common.AbstractBase;
-import common.SerdeGenerator;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
-import org.apache.kafka.streams.Topology;
-import org.apache.kafka.streams.kstream.Consumed;
-import org.apache.kafka.streams.kstream.KStream;
 import picocli.CommandLine;
-import schema.Customer;
 
 import java.util.Properties;
 import java.util.concurrent.Callable;

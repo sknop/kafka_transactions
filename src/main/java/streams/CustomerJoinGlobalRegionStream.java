@@ -3,7 +3,6 @@ package streams;
 import common.SerdeGenerator;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
-import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.*;
 import org.apache.kafka.streams.state.KeyValueStore;
@@ -13,7 +12,6 @@ import schema.CustomerWithRegion;
 import schema.Region;
 
 import java.util.Properties;
-import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "CustomerJoinGlobalRegionStream",
         version = "CustomerJoinGlobalRegionStream 1.0",

@@ -1,23 +1,16 @@
 package streams;
 
 import common.SerdeGenerator;
-import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
-import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
-import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.GlobalKTable;
-import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.state.KeyValueStore;
 import picocli.CommandLine;
 import schema.PricePoint;
 
-import java.util.Collections;
-import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "PricePointGlobalTable",
         version = "PricePointGlobalTable 1.0",

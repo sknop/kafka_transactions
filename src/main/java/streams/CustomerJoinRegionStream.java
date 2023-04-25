@@ -3,7 +3,6 @@ package streams;
 import common.SerdeGenerator;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.*;
 import picocli.CommandLine;
@@ -12,7 +11,6 @@ import schema.CustomerWithRegion;
 import schema.Region;
 
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 @CommandLine.Command(name = "CustomerJoinRegionStream",
