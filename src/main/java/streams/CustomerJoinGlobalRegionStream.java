@@ -18,7 +18,7 @@ import java.util.concurrent.Callable;
 @CommandLine.Command(name = "CustomerJoinGlobalRegionStream",
         version = "CustomerJoinGlobalRegionStream 1.0",
         description = "Reads Customer objects in Avro format from a stream.")
-public class CustomerJoinGlobalRegionStream extends AbstreamStream implements Callable<Integer> {
+public class CustomerJoinGlobalRegionStream extends AbstreamStream {
     final static String CUSTOMER_TOPIC = "customer";
     final static String REGION_TOPIC = "region";
     final static String CUSTOMER_WITH_GLOBAL_REGION_TOPIC = "customer-with-global-region";
@@ -49,11 +49,8 @@ public class CustomerJoinGlobalRegionStream extends AbstreamStream implements Ca
         return "customer-join-region-stream";
     }
 
-    private void consume() {
-        createProperties();
-
-        StreamsBuilder builder = new StreamsBuilder();
-
+    @Override
+    protected void createTopology(StreamsBuilder builder) {
         var regions = builder.globalTable(regionTopic,
                 Materialized.<String, Region, KeyValueStore<Bytes, byte[]>>as(REGION_GLOBAL_TABLE).
                         withKeySerde(Serdes.String()).
@@ -78,34 +75,6 @@ public class CustomerJoinGlobalRegionStream extends AbstreamStream implements Ca
         existingCustomers.join(regions, keyValueMapper, valueJoiner)
                 .peek((k,v) -> System.out.println("Peeked " + k + " with value " + v))
                 .to(customerWithGlobalRegion, Produced.with(Serdes.Integer(), SerdeGenerator.getSerde(properties)));
-
-        var build = builder.build();
-        var description = build.describe();
-        System.out.println(description);
-
-        KafkaStreams streams = createStreams(build);
-
-        streams.setStateListener((newState, oldState) -> System.out.println("*** Changed state from " +oldState + " to " + newState));
-        streams.start();
-
-        // TODO: replace by property
-        if (scale > 1) {
-            for (var threads = 1; threads < scale; threads++) {
-                logger.info(String.format("Increased thread count to %d", threads));
-                streams.addStreamThread();
-            }
-        }
-
-        // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
-        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
-    }
-
-
-    @Override
-    public Integer call() {
-        consume();
-
-        return 0;
     }
 
     public static void main(String[] args) {

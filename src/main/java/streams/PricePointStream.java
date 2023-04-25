@@ -1,11 +1,13 @@
 package streams;
 
+import common.SerdeGenerator;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
+import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Materialized;
@@ -33,8 +35,6 @@ public class PricePointStream extends AbstreamStream implements Callable<Integer
 
     @Override
     protected void addConsumerProperties(Properties properties) {
-        properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
-        properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
     }
 
     @Override
@@ -42,31 +42,13 @@ public class PricePointStream extends AbstreamStream implements Callable<Integer
         return "price-point-stream";
     }
 
-    private void consume() {
-        StreamsBuilder builder = new StreamsBuilder();
-        var integerSerde = Serdes.Integer();
-        var specificSerde = new SpecificAvroSerde<PricePoint>();
-
-
-        KStream<Integer, PricePoint> pricePoints = builder.stream(topic);
+    @Override
+    protected void createTopology(StreamsBuilder builder) {
+        KStream<Integer, PricePoint> pricePoints = builder.stream(topic, Consumed.with(Serdes.Integer(), SerdeGenerator.<PricePoint>getSerde(properties)));
 
         if (verbose)
             pricePoints.foreach((key, value) -> System.out.println(key + " => " + value));
 
-        KafkaStreams streams = createStreams(builder.build());
-        streams.setStateListener((newState, oldState) -> System.out.println("*** Changed state from " +oldState + " to " + newState));
-        streams.start();
-
-        // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
-        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
-    }
-
-
-    @Override
-    public Integer call() {
-        consume();
-
-        return 0;
     }
 
     public static void main(String[] args) {

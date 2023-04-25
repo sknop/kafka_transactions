@@ -18,7 +18,7 @@ import java.util.concurrent.ExecutionException;
 @CommandLine.Command(name = "CustomerJoinRegionStream",
         version = "CustomerJoinRegionStream 1.0",
         description = "Reads Customer objects in Avro format from a stream.")
-public class CustomerJoinRegionStream extends AbstreamStream implements Callable<Integer> {
+public class CustomerJoinRegionStream extends AbstreamStream {
     final static String CUSTOMER_TOPIC = "customer";
     final static String REGION_TOPIC = "region";
 
@@ -63,15 +63,12 @@ public class CustomerJoinRegionStream extends AbstreamStream implements Callable
         return "customer-join-region-stream";
     }
 
-    private void consume() {
-        createProperties();
-
+    @Override
+    protected void createTopology(StreamsBuilder builder) {
         var partitionCount = getPartitions();
 
         int regionPartitions = partitionCount.get(0);
         int customerPartitions = partitionCount.get(1);
-
-        StreamsBuilder builder = new StreamsBuilder();
 
         KTable<String, Region> regions = builder.table(regionTopic,
                 Consumed.with(Serdes.String(), SerdeGenerator.getSerde(properties)),
@@ -104,29 +101,6 @@ public class CustomerJoinRegionStream extends AbstreamStream implements Callable
                 .repartition(repartitioned)
                 .join(regions, valueJoiner, joiner)
                 .to(customerWithRegion, Produced.with(Serdes.String(), SerdeGenerator.getSerde(properties)));
-
-        KafkaStreams streams = createStreams(builder.build());
-
-        streams.setStateListener((newState, oldState) -> System.out.println("*** Changed state from " +oldState + " to " + newState));
-        streams.start();
-
-        if (scale > 1) {
-            for (var threads = 1; threads < scale; threads++) {
-                logger.info(String.format("Increased thread count to %d", threads));
-                streams.addStreamThread();
-            }
-        }
-
-        // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
-        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
-    }
-
-
-    @Override
-    public Integer call() {
-        consume();
-
-        return 0;
     }
 
     public static void main(String[] args) {

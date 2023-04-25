@@ -23,7 +23,7 @@ import java.util.concurrent.Callable;
 @CommandLine.Command(name = "CustomerDeduplicateJoinCustomerDeduplicateJoin",
         version = "CustomerDeduplicateJoinCustomerDeduplicateJoin 1.0",
         description = "Creates unique version of a customer with updated epoch.")
-public class CustomerDeduplicateJoin extends AbstreamStream implements Callable<Integer>  {
+public class CustomerDeduplicateJoin extends AbstreamStream {
     final static String CUSTOMER_TOPIC = "customer";
     final static String CUSTOMER_UNIQUE_TOPIC = "customer-unique-join";
 
@@ -53,12 +53,8 @@ public class CustomerDeduplicateJoin extends AbstreamStream implements Callable<
         return "customer-deduplicate-streamcustomer-deduplicate-stream";
     }
 
-    private void consume() {
-        StreamsBuilder builder = new StreamsBuilder();
-
-        // Create properties beforehand so that Serdes can be initialised before the topology is built
-        createProperties();
-
+    @Override
+    protected void createTopology(StreamsBuilder builder) {
         KStream<Integer, Customer> existingCustomers = builder.stream(customerTopic, Consumed.with(Serdes.Integer(), SerdeGenerator.getSerde(properties)));
 
 //        Map<String, String> changeLogConfigs = new HashMap<>();
@@ -87,20 +83,6 @@ public class CustomerDeduplicateJoin extends AbstreamStream implements Callable<
                 .peek((k,v) -> System.out.println("Peeked key = " + k + " value = " + v))
                 .filter( ((key, value) -> (value != null)))
                 .to(uniqueTopic, Produced.with(Serdes.Integer(), SerdeGenerator.getSerde(properties)));
-
-        KafkaStreams streams = createStreams(builder.build(), false);
-        streams.start();
-
-        // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
-        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
-
-    }
-
-    @Override
-    public Integer call() throws Exception {
-        consume();
-
-        return 0;
     }
 
     public static void main(String[] args) {

@@ -2,7 +2,6 @@ package streams;
 
 import common.SerdeGenerator;
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
@@ -15,7 +14,7 @@ import java.util.concurrent.Callable;
 @CommandLine.Command(name = "CustomerStream",
         version = "CustomerStream 1.0",
         description = "Reads Customer objects in Avro format from a stream.")
-public class CustomerStream extends AbstreamStream implements Callable<Integer> {
+public class CustomerStream extends AbstreamStream {
     final static String CUSTOMER_TOPIC = "customer";
 
     @CommandLine.Option(names = {"--topic"},
@@ -36,39 +35,14 @@ public class CustomerStream extends AbstreamStream implements Callable<Integer> 
         // properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
     }
 
-    private void consume() {
-        StreamsBuilder builder = new StreamsBuilder();
-
-        createProperties();
-
+    @Override
+    protected void createTopology(StreamsBuilder builder) {
         KStream<Integer, Customer> existingCustomers = builder.stream(customerTopic, Consumed.with(Serdes.Integer(), SerdeGenerator.getSerde(properties)));
 
         if (verbose)
             existingCustomers.
                     filter((key, value) -> value.getAge() > 30 && value.getAge() < 55).
                     foreach((key, value) -> System.out.println(key + " => " + value));
-
-        KafkaStreams streams = createStreams(builder.build(), false);
-        streams.setStateListener((newState, oldState) -> System.out.println("*** Changed state from " +oldState + " to " + newState));
-        streams.start();
-
-        if (scale > 1) {
-            for (var threads = 1; threads < scale; threads++) {
-                logger.info(String.format("Increased thread count to %d", threads));
-                streams.addStreamThread();
-            }
-        }
-
-        // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
-        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
-    }
-
-
-    @Override
-    public Integer call() {
-        consume();
-
-        return 0;
     }
 
     public static void main(String[] args) {

@@ -1,5 +1,6 @@
 package streams;
 
+import common.SerdeGenerator;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
@@ -50,14 +51,9 @@ public class BinaryConversionStream extends AbstreamStream implements Callable<I
         properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
     }
 
-    private void consume() {
-        var specificAvroSerde = new SpecificAvroSerde<HexString>();
-        var serdeConfig = new HashMap<String, String>();
-
-        properties.forEach((key,value) -> serdeConfig.put(key.toString(), value.toString()));
-        specificAvroSerde.configure(serdeConfig, false);
-
-        StreamsBuilder builder = new StreamsBuilder();
+    @Override
+    protected void createTopology(StreamsBuilder builder) {
+        createProperties();
 
         KStream<Integer, Binary> existingBinary = builder.stream(binaryTopic);
 
@@ -66,14 +62,7 @@ public class BinaryConversionStream extends AbstreamStream implements Callable<I
 
         existingBinary.map((key, value) -> convertKeyValuefromBinary(value))
                 .peek((key, value) -> System.out.println(key + " => " + value))
-                .to(hexStringTopic, Produced.with(Serdes.String(), specificAvroSerde));
-
-        KafkaStreams streams = createStreams(builder.build());
-        streams.setStateListener((newState, oldState) -> System.out.println("*** Changed state from " +oldState + " to " + newState));
-        streams.start();
-
-        // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
-        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
+                .to(hexStringTopic, Produced.with(Serdes.String(), SerdeGenerator.<HexString>getSerde(properties)));
     }
 
     private KeyValue<String, HexString> convertKeyValuefromBinary(Binary binary) {
@@ -84,13 +73,6 @@ public class BinaryConversionStream extends AbstreamStream implements Callable<I
         }
 
         return new KeyValue<>(key.toString(), new HexString(key.toString(), binary.getPayload()));
-    }
-
-    @Override
-    public Integer call() {
-        consume();
-
-        return 0;
     }
 
     public static void main(String[] args) {

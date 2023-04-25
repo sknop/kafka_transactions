@@ -1,16 +1,23 @@
 package streams;
 
 import common.AbstractBase;
+import common.SerdeGenerator;
 import io.confluent.kafka.serializers.KafkaAvroSerializerConfig;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
+import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
+import org.apache.kafka.streams.kstream.Consumed;
+import org.apache.kafka.streams.kstream.KStream;
 import picocli.CommandLine;
+import schema.Customer;
 
 import java.util.Properties;
+import java.util.concurrent.Callable;
 
-public abstract class AbstreamStream extends AbstractBase {
+public abstract class AbstreamStream extends AbstractBase implements Callable<Integer> {
     @CommandLine.Option(names = {"-v", "--verbose"},
             description = "If enabled, will print out every message created")
     protected boolean verbose = false;
@@ -55,16 +62,34 @@ public abstract class AbstreamStream extends AbstractBase {
         addConsumerProperties(properties);
     }
 
-    protected KafkaStreams createStreams(Topology topology) {
-        return this.createStreams(topology, true);
+    @Override
+    public Integer call() {
+        StreamsBuilder builder = new StreamsBuilder();
+
+        createProperties();
+
+        createTopology(builder);
+
+        //noinspection resource
+        KafkaStreams streams = new KafkaStreams(builder.build(), properties);
+
+        streams.setStateListener((newState, oldState) -> System.out.println("*** Changed state from " +oldState + " to " + newState));
+        streams.start();
+
+        if (scale > 1) {
+            for (var threads = 1; threads < scale; threads++) {
+                logger.info(String.format("Increased thread count to %d", threads));
+                streams.addStreamThread();
+            }
+        }
+
+        // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
+        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
+
+        return 0;
     }
 
-    protected KafkaStreams createStreams(Topology topology, boolean createProperties) {
-        if (createProperties)
-            createProperties();
-
-        return new KafkaStreams(topology, properties);
-    }
+    abstract protected void createTopology(StreamsBuilder builder);
 
     protected abstract void addConsumerProperties(Properties properties);
 
