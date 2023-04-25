@@ -41,7 +41,7 @@ public class PricePointTable extends AbstreamStream {
         KTable<Integer, PricePoint> pricePoints = builder.table(topic,
                 Materialized.<Integer, PricePoint, KeyValueStore<Bytes, byte[]>>as("price.table")
                         .withKeySerde(Serdes.Integer())
-                        .withValueSerde(SerdeGenerator.<PricePoint>getSerde(properties))
+                        .withValueSerde(SerdeGenerator.getSerde(properties))
         );
 
         if (verbose)

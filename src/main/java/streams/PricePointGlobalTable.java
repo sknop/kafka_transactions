@@ -41,7 +41,7 @@ public class PricePointGlobalTable extends AbstreamStream {
         GlobalKTable<Integer, PricePoint> pricePoints = builder.globalTable(topic,
                 Materialized.<Integer, PricePoint, KeyValueStore<Bytes, byte[]>>as("global.price.table")
                         .withKeySerde(Serdes.Integer())
-                        .withValueSerde(SerdeGenerator.<PricePoint>getSerde(properties))
+                        .withValueSerde(SerdeGenerator.getSerde(properties))
         );
 
 //        if (verbose)

@@ -6,6 +6,7 @@ import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
+import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Produced;
 import picocli.CommandLine;
@@ -41,22 +42,20 @@ public class BinaryConversionStream extends AbstreamStream implements Callable<I
 
     @Override
     protected void addConsumerProperties(Properties properties) {
-        properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.Integer().getClass());
-        properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
     }
 
     @Override
     protected void createTopology(StreamsBuilder builder) {
         createProperties();
 
-        KStream<Integer, Binary> existingBinary = builder.stream(binaryTopic);
+        KStream<Integer, Binary> existingBinary = builder.stream(binaryTopic, Consumed.with(Serdes.Integer(), SerdeGenerator.getSerde(properties)));
 
         if (verbose)
             existingBinary.foreach((key, value) -> System.out.println(key + " => " + value));
 
         existingBinary.map((key, value) -> convertKeyValuefromBinary(value))
                 .peek((key, value) -> System.out.println(key + " => " + value))
-                .to(hexStringTopic, Produced.with(Serdes.String(), SerdeGenerator.<HexString>getSerde(properties)));
+                .to(hexStringTopic, Produced.with(Serdes.String(), SerdeGenerator.getSerde(properties)));
     }
 
     private KeyValue<String, HexString> convertKeyValuefromBinary(Binary binary) {

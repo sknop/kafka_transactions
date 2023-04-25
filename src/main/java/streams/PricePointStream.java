@@ -16,8 +16,6 @@ import java.util.concurrent.Callable;
         description = "Reads PricePoints and prints them.")
 public class PricePointStream extends AbstreamStream implements Callable<Integer> {
     final static String PRICEPOINT_TOPIC = "pricepoint";
-    final static String BOOTSTRAP_SERVERS = "localhost:9092";
-    final static String SCHEMA_REGISTRY_URL = "http://localhost:8081";
 
     @CommandLine.Option(names = {"--topic"},
             description = "Topic for the object (default = ${DEFAULT-VALUE})")
@@ -37,7 +35,7 @@ public class PricePointStream extends AbstreamStream implements Callable<Integer
 
     @Override
     protected void createTopology(StreamsBuilder builder) {
-        KStream<Integer, PricePoint> pricePoints = builder.stream(topic, Consumed.with(Serdes.Integer(), SerdeGenerator.<PricePoint>getSerde(properties)));
+        KStream<Integer, PricePoint> pricePoints = builder.stream(topic, Consumed.with(Serdes.Integer(), SerdeGenerator.getSerde(properties)));
 
         if (verbose)
             pricePoints.foreach((key, value) -> System.out.println(key + " => " + value));
