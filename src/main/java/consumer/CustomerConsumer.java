@@ -72,7 +72,7 @@ public class CustomerConsumer extends AbstractBaseConsumer<Integer, Customer> {
     protected void addProperties(Properties properties) {
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer.class);
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class);
-        properties.put(ConsumerConfig.GROUP_ID_CONFIG, "consumeProducts");
+        properties.put(ConsumerConfig.GROUP_ID_CONFIG, "consumeCustomers");
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         properties.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false");
 
