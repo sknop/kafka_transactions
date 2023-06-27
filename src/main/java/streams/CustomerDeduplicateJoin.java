@@ -61,6 +61,11 @@ public class CustomerDeduplicateJoin extends AbstreamStream {
                         .withCachingEnabled()
         );
 
+        createTopologyWithStreams(existingCustomers, uniqueCustomers);
+    }
+
+    /* potentially useful for test cases to separate this step out? */
+    protected void createTopologyWithStreams(KStream<Integer, Customer> existingCustomers, KTable<Integer, Customer> uniqueCustomers) {
         existingCustomers
                 .leftJoin(uniqueCustomers, (customer, unique) -> {
                     Customer result = customer;
