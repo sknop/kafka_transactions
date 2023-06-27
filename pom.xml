@@ -10,13 +10,13 @@
 
     <properties>
         <java.version>17</java.version>
-        <confluent.version>7.3.3</confluent.version>
-        <kafka.version>3.3.2</kafka.version>
+        <confluent.version>7.4.0</confluent.version>
+        <kafka.version>3.4.0</kafka.version>
         <avro.version>1.11.1</avro.version>
         <slf4j.version>2.0.5</slf4j.version>
         <logback.version>1.4.5</logback.version>
-        <picocli.version>4.7.0</picocli.version>
-        <jline.version>3.21.0</jline.version>
+        <picocli.version>4.7.4</picocli.version>
+        <jline.version>3.22.0</jline.version>
         <junit.jupiter.version>5.9.0</junit.jupiter.version>
         <testcontainer.version>1.17.6</testcontainer.version>
         <jackson.version>2.13.3</jackson.version>
