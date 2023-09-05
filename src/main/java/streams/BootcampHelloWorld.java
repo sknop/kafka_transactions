@@ -47,8 +47,11 @@ public class BootcampHelloWorld {
                 .foreach((key, value) ->
                         System.out.println("Key : " + key + " Name = " + value.getLastName() + " Age = " + value.getAge()));
 
-        var stream = new KafkaStreams(builder.build(), properties);
+        try(var stream = new KafkaStreams(builder.build(), properties)) {
+            stream.start();
 
-        stream.start();
+            // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
+            Runtime.getRuntime().addShutdownHook(new Thread(stream::close));
+        }
     }
 }
