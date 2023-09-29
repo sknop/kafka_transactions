@@ -12,7 +12,7 @@
         <java.version>17</java.version>
         <confluent.version>7.4.0</confluent.version>
         <kafka.version>3.4.0</kafka.version>
-        <avro.version>1.11.2</avro.version>
+        <avro.version>1.11.3</avro.version>
         <slf4j.version>2.0.5</slf4j.version>
         <logback.version>1.4.5</logback.version>
         <picocli.version>4.7.4</picocli.version>
