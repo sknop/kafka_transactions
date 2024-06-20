@@ -15,7 +15,7 @@ import java.util.Properties;
 @CommandLine.Command(name = "PricePointGlobalTable",
         version = "PricePointGlobalTable 1.0",
         description = "Reads PricePoints and updates a state store.")
-public class PricePointGlobalTable extends AbstreamStream {
+public class PricePointGlobalTable extends AbstractStream {
     final static String PRICEPOINT_TOPIC = "pricepoint";
 
     @CommandLine.Option(names = {"--topic"},

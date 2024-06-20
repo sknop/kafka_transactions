@@ -18,7 +18,7 @@ import java.util.concurrent.Callable;
 @CommandLine.Command(name = "BinaryConversionStream",
         version = "BinaryConversionStream 1.0",
         description = "Reads Binary objects in Avro format and converts binary fields to Hex.")
-public class BinaryConversionStream extends AbstreamStream implements Callable<Integer> {
+public class BinaryConversionStream extends AbstractStream implements Callable<Integer> {
     final static String BINARY_TOPIC = "schema.Binary";
     final static String HEXSTRING_TOPIC = "schema.HexString";
 

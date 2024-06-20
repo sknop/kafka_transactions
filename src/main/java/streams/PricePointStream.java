@@ -14,7 +14,7 @@ import java.util.concurrent.Callable;
 @CommandLine.Command(name = "PricePointStream",
         version = "PricePointStream 1.0",
         description = "Reads PricePoints and prints them.")
-public class PricePointStream extends AbstreamStream implements Callable<Integer> {
+public class PricePointStream extends AbstractStream implements Callable<Integer> {
     final static String PRICEPOINT_TOPIC = "pricepoint";
 
     @CommandLine.Option(names = {"--topic"},

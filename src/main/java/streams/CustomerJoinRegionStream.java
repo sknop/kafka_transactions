@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutionException;
 @CommandLine.Command(name = "CustomerJoinRegionStream",
         version = "CustomerJoinRegionStream 1.0",
         description = "Reads Customer objects in Avro format from a stream.")
-public class CustomerJoinRegionStream extends AbstreamStream {
+public class CustomerJoinRegionStream extends AbstractStream {
     final static String CUSTOMER_TOPIC = "customer";
     final static String REGION_TOPIC = "region";
 

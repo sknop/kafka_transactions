@@ -15,7 +15,7 @@ import java.util.Properties;
 @CommandLine.Command(name = "CustomerDeduplicateJoinCustomerDeduplicateJoin",
         version = "CustomerDeduplicateJoinCustomerDeduplicateJoin 1.0",
         description = "Creates unique version of a customer with updated epoch.")
-public class CustomerDeduplicateJoin extends AbstreamStream {
+public class CustomerDeduplicateJoin extends AbstractStream {
     final static String CUSTOMER_TOPIC = "customer";
     final static String CUSTOMER_UNIQUE_TOPIC = "customer-unique-join";
 

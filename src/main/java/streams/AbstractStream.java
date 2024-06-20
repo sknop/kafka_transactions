@@ -11,7 +11,7 @@ import picocli.CommandLine;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 
-public abstract class AbstreamStream extends AbstractBase implements Callable<Integer> {
+public abstract class AbstractStream extends AbstractBase implements Callable<Integer> {
     @CommandLine.Option(names = {"-v", "--verbose"},
             description = "If enabled, will print out every message created")
     protected boolean verbose = false;
@@ -24,7 +24,7 @@ public abstract class AbstreamStream extends AbstractBase implements Callable<In
             description = "If set, use as the state.dir parameter for this stream")
     protected String stateDir;
 
-    public AbstreamStream() {
+    public AbstractStream() {
     }
 
     @Override

@@ -16,7 +16,7 @@ import java.util.Properties;
 @CommandLine.Command(name = "CustomerJoinGlobalRegionStream",
         version = "CustomerJoinGlobalRegionStream 1.0",
         description = "Reads Customer objects in Avro format from a stream.")
-public class CustomerJoinGlobalRegionStream extends AbstreamStream {
+public class CustomerJoinGlobalRegionStream extends AbstractStream {
     final static String CUSTOMER_TOPIC = "customer";
     final static String REGION_TOPIC = "region";
     final static String CUSTOMER_WITH_GLOBAL_REGION_TOPIC = "customer-with-global-region";

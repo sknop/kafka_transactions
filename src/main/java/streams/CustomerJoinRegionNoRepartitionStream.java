@@ -15,7 +15,7 @@ import java.util.Properties;
 @CommandLine.Command(name = "CustomerJoinNoRepartitionRegionStream",
         version = "CustomerJoinNoRepartitionRegionStream 1.0",
         description = "Reads Customer objects in Avro format from a stream.")
-    public class CustomerJoinRegionNoRepartitionStream extends AbstreamStream {
+    public class CustomerJoinRegionNoRepartitionStream extends AbstractStream {
     final static String CUSTOMER_TOPIC = "customer";
     final static String REGION_TOPIC = "region";
 

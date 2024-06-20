@@ -13,7 +13,7 @@ import java.util.Properties;
 @CommandLine.Command(name = "CustomerStream",
         version = "CustomerStream 1.0",
         description = "Reads Customer objects in Avro format from a stream.")
-public class CustomerStream extends AbstreamStream {
+public class CustomerStream extends AbstractStream {
     final static String CUSTOMER_TOPIC = "customer";
 
     @CommandLine.Option(names = {"--topic"},
