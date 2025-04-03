@@ -40,10 +40,10 @@ public class AdminTest {
         Admin admin = new Admin(kafka.getBootstrapServers());
         try {
             Collection<Node> nodes = admin.getKafkaNodes();
-            assertEquals(nodes.size(), 1);
+            assertEquals(1, nodes.size());
 
             List<String> topics = admin.getTopics();
-            assertEquals(topics.size(), 0);
+            assertEquals(0, topics.size());
         } catch (ExecutionException | InterruptedException e) {
             fail("Should not throw an exception here");
         }
@@ -55,7 +55,7 @@ public class AdminTest {
         Admin admin = new Admin(kafka.getBootstrapServers());
         try {
             List<String> topics = admin.getTopics();
-            assertEquals(topics.size(), 0);
+            assertEquals(0, topics.size());
         } catch (ExecutionException | InterruptedException e) {
             fail("Should not throw an exception here");
         }
@@ -70,11 +70,11 @@ public class AdminTest {
         try {
             CreateTopicsResult result = admin.createTopic(topicName, 4, (short) 1);
 
-            assertEquals(result.replicationFactor(topicName).get(),(short)1);
-            assertEquals(result.numPartitions(topicName).get(),4);
+            assertEquals((short)1, result.replicationFactor(topicName).get());
+            assertEquals(4, result.numPartitions(topicName).get());
 
             List<String> topics = admin.getTopics();
-            assertEquals(topics.size(), 1);
+            assertEquals(1, topics.size());
         } catch (ExecutionException | InterruptedException e) {
             fail("Should not throw an exception here");
         }
