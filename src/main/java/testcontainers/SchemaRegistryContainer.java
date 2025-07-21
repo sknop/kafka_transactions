@@ -2,7 +2,7 @@ package testcontainers;
 
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
 public class SchemaRegistryContainer extends GenericContainer<SchemaRegistryContainer> {
@@ -10,7 +10,7 @@ public class SchemaRegistryContainer extends GenericContainer<SchemaRegistryCont
 
     private static final int PORT_NOT_ASSIGNED = -1;
 
-    protected KafkaContainer kafkaContainer;
+    protected ConfluentKafkaContainer kafkaContainer;
     private int port = PORT_NOT_ASSIGNED;
 
     public SchemaRegistryContainer(final DockerImageName dockerImageName) {
@@ -23,12 +23,12 @@ public class SchemaRegistryContainer extends GenericContainer<SchemaRegistryCont
         withEnv("SCHEMA_REGISTRY_LISTENERS", "http://0.0.0.0:" + SCHEMA_REGISTRY_PORT);
     }
 
-    public SchemaRegistryContainer withKafka(KafkaContainer kafkaContainer) {
+    public SchemaRegistryContainer withKafka(ConfluentKafkaContainer kafkaContainer) {
         this.kafkaContainer = kafkaContainer;
 
         dependsOn(kafkaContainer);
         withNetwork(kafkaContainer.getNetwork());
-        withEnv("SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS", kafkaContainer.getNetworkAliases().get(0) + ":9092");
+        withEnv("SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS", kafkaContainer.getNetworkAliases().getFirst() + ":9093");
 
         return this;
     }
