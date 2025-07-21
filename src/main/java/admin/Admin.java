@@ -66,7 +66,7 @@ public class Admin extends AbstractBase implements Callable<Integer> {
     }
 
     public Map<String,TopicDescription> getDescription(List<String> topics) throws InterruptedException, ExecutionException {
-        var descriptions = client.describeTopics(topics).all();
+        var descriptions = client.describeTopics(topics).allTopicNames();
 
         return descriptions.get();
     }

@@ -26,6 +26,8 @@ public class CustomerDeduplicationStreamTest {
         var topology = builder.build();
 
         testDriver = new TopologyTestDriver(topology, config);
+
+        // TODO do something with the stream
     }
 
     @AfterEach

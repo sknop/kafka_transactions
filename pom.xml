@@ -10,15 +10,15 @@
 
     <properties>
         <java.version>21</java.version>
-        <confluent.version>7.9.0</confluent.version>
-        <kafka.version>3.9.0</kafka.version>
+        <confluent.version>8.0.0</confluent.version>
+        <kafka.version>4.0.0</kafka.version>
         <avro.version>1.11.4</avro.version>
         <slf4j.version>2.0.13</slf4j.version>
         <logback.version>1.5.6</logback.version>
         <picocli.version>4.7.6</picocli.version>
         <jline.version>3.26.1</jline.version>
         <junit.jupiter.version>5.12.1</junit.jupiter.version>
-        <testcontainer.version>1.20.6</testcontainer.version>
+        <testcontainer.version>1.21.3</testcontainer.version>
         <jackson.version>2.17.1</jackson.version>
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
         <!-- <nitrite.version>3.0.0</nitrite.version> -->
@@ -225,28 +225,7 @@
                 <version>3.5.3</version>
             </plugin>
 
-            <plugin>
-                <groupId>io.confluent</groupId>
-                <artifactId>kafka-schema-registry-maven-plugin</artifactId>
-                <version>7.3.1</version>
-                <configuration>
-                    <schemaRegistryUrls>
-                        <param>https://psrc-k6gvm.us-west-2.aws.confluent.cloud</param>
-                    </schemaRegistryUrls>
-                    <userInfoConfig>67D7VVNWXOQOFEUR:Uc2B7zeXMCXCJHZKG3PLK/hSieQYkn6W2vh5RMiWddmFG1ZqwPhobR8p3kXSNIhw</userInfoConfig>
-                    <outputDirectory>src/main/avro</outputDirectory>
-                    <subjectPatterns>
-                        <param>^customer-(key|value)$</param>
-                        <param>^region-(key|value)$</param>
-                    </subjectPatterns>
-                    <compatibilityLevels/>
-                    <messagePath/>
-                    <outputPath/>
-                    <previousSchemaPaths/>
-                    <schemas/>
-                    <subjects/>
-                </configuration>
-            </plugin>
+
         </plugins>
     </build>
 </project>

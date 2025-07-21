@@ -17,7 +17,7 @@ public class CustomerProducerTest {
     public static Network network = Network.newNetwork();
 
     @Container
-    public static KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.9.0"))
+    public static org.testcontainers.containers.KafkaContainer kafka = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.9.0"))
             .withNetwork(network);
 
     @Container

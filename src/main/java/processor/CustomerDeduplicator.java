@@ -12,12 +12,12 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
-import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.Transformer;
-import org.apache.kafka.streams.processor.ProcessorContext;
+import org.apache.kafka.streams.processor.api.Processor;
+import org.apache.kafka.streams.processor.api.ProcessorContext;
+import org.apache.kafka.streams.processor.api.Record;
 import org.apache.kafka.streams.state.KeyValueBytesStoreSupplier;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
@@ -34,11 +34,11 @@ public class CustomerDeduplicator {
     public static final String BOOTSTRAP_SERVERS = "localhost:9092";
     public static final String SCHEMA_REGISTRY_URL = "http://localhost:8081";
 
-    private String customerTopic;
-    private String uniqueTopic;
+    private final String customerTopic;
+    private final String uniqueTopic;
 
-    private String bootstrapServers;
-    private String schemaRegistryURL;
+    private final String bootstrapServers;
+    private final String schemaRegistryURL;
 
     public CustomerDeduplicator(Namespace options) {
         customerTopic = options.get("customer_topic");
@@ -49,23 +49,23 @@ public class CustomerDeduplicator {
 
     /**
      * Discards duplicate records from the input stream.
-     *
+     * <p>
      * Duplicate records are detected based on an event ID;  in this simplified example, the record
      * value is the event ID.  The transformer remembers known event IDs in an associated window state
      * store, which automatically purges/expires event IDs from the store after a certain amount of
      * time has passed to prevent the store from growing indefinitely.
-     *
+     * <p>
      * Note: This code is for demonstration purposes and was not tested for production usage.
      */
-    private static class DeduplicationTransformer<K, V, R> implements Transformer<K, V, KeyValue<K, V>> {
+    private static class DeduplicationTransformer implements Processor<Integer, Customer, Integer, Customer> {
 
-        private ProcessorContext context;
+        private ProcessorContext<Integer, Customer> context;
 
         /**
          * Key: Customer ID
          * Value: Customer object (AVRO)
          */
-        private KeyValueStore<K, V> customerStore;
+        private KeyValueStore<Integer, Customer> customerStore;
 
         /**
          *
@@ -74,42 +74,34 @@ public class CustomerDeduplicator {
         }
 
         @Override
-        @SuppressWarnings("unchecked")
-        public void init(final ProcessorContext context) {
+        public void init(ProcessorContext<Integer, Customer> context) {
             this.context = context;
-            customerStore = (KeyValueStore<K, V>) context.getStateStore("unique-customer-store");
+            customerStore = context.getStateStore("unique-customer-store");
         }
 
-        @SuppressWarnings("unchecked")
         @Override
-        public KeyValue<K, V> transform(final K key, final V value) {
-            KeyValue<K, V> output;
+        public void process(Record<Integer, Customer> record) {
+            Customer storedValue = customerStore.get(record.key());
+            Customer updatedCustomer;
 
-            V storedValue = customerStore.get(key);
             if (storedValue != null) {
-                // duplicate, increase epoch
-                Customer existingCustomer = (Customer) storedValue;
-                Customer updatedCustomer = (Customer) value;
-
                 Customer newCustomer = new Customer(
-                        existingCustomer.getCustomerId(),
-                        existingCustomer.getFirstName(),
-                        existingCustomer.getLastName(),
-                        existingCustomer.getEmail(),
-                        updatedCustomer.getUpdate(),
-                        updatedCustomer.getAge(),
-                        updatedCustomer.getRegion(),
-                        existingCustomer.getEpoch() + 1
+                        record.value().getCustomerId(),
+                        record.value().getFirstName(),
+                        record.value().getLastName(),
+                        record.value().getEmail(),
+                        record.value().getUpdate(),
+                        record.value().getAge(),
+                        record.value().getRegion(),
+                        record.value().getEpoch() + 1
                 );
-                output = KeyValue.pair(key, (V) newCustomer);
-            }
-            else {
-                output = KeyValue.pair(key, value);
-            }
 
-            customerStore.put(output.key, output.value);
+                customerStore.put(record.key(), newCustomer);
+                updatedCustomer = newCustomer;
+            } else
+                updatedCustomer = record.value();
 
-            return output;
+            context.forward(record.withValue(updatedCustomer));
         }
 
         @Override
@@ -148,7 +140,7 @@ public class CustomerDeduplicator {
 
         KStream<Integer, Customer> input = builder.stream(customerTopic);
         KStream<Integer, Customer> deduplicated = input
-                .transform(() -> new DeduplicationTransformer<>(),"unique-customer-store")
+                .process(DeduplicationTransformer::new,"unique-customer-store")
                 .peek((k,v) -> System.out.println("Result = " + k + " value = " + v)
         );
         deduplicated.to(uniqueTopic);
