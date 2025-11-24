@@ -62,7 +62,7 @@ public class GenericOrderProducer extends AbstractProducer implements Callable<I
 
         record.put("orderId", orderId);
         record.put("date", date);
-        record.put("orderAmount", customerId);
+        record.put("orderAmount", orderAmount);
         record.put("customerId", Integer.toString(customerId));
 
         return new ProducerRecord<>(topic, orderId, record);

@@ -8,7 +8,6 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
 import picocli.CommandLine;
 import schema.Customer;
-import schema.Product;
 
 import java.time.Duration;
 import java.util.Arrays;

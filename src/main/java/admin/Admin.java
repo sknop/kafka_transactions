@@ -15,9 +15,6 @@ import java.util.concurrent.ExecutionException;
 public class Admin extends AbstractBase implements Callable<Integer> {
     public static final String BOOTSTRAP_SERVERS = "localhost:9092";
 
-    @CommandLine.Option(names = {"--bootstrap-servers"})
-    protected String bootstrapServers;
-
     @CommandLine.Option(names = {"--create"})
     protected String topicToCreate;
 
