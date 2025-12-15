@@ -8,10 +8,7 @@ import picocli.CommandLine;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 @CommandLine.Command(name = "NumberConsumer",
         version = "NumberConsumer 1.0",
@@ -33,12 +30,7 @@ public class NumberConsumer extends AbstractBaseConsumer<Void, Long> {
 
     @Override
     protected Collection<String> getTopicsList() {
-        return Arrays.asList(numberTopic);
-    }
-
-    @Override
-    protected void subscribe(KafkaConsumer<Void, Long> consumer) {
-        consumer.subscribe(Arrays.asList(numberTopic));
+        return Collections.singletonList(numberTopic);
     }
 
     @Override

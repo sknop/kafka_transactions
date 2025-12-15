@@ -39,11 +39,6 @@ public class GenericAvroConsumer extends AbstractBaseConsumer<Integer, GenericRe
     }
 
     @Override
-    protected void subscribe(KafkaConsumer<Integer, GenericRecord> consumer) {
-        consumer.subscribe(Collections.singletonList(topic));
-    }
-
-    @Override
     protected int consumeBatch(KafkaConsumer<Integer, GenericRecord> consumer) {
         ConsumerRecords<Integer, GenericRecord> records = consumer.poll(duration);
         System.out.printf("*** Batch size %d%n", records.count());

@@ -66,7 +66,6 @@ public abstract class AbstractBaseConsumer<KeyType,ValueType> extends AbstractBa
 
     protected abstract Collection<String> getTopicsList();
 
-    protected abstract void subscribe(KafkaConsumer<KeyType, ValueType> consumer);
     protected abstract int consumeBatch(KafkaConsumer<KeyType,ValueType> consumer);
 
     @Override

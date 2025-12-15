@@ -12,6 +12,7 @@ import schema.Customer;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Properties;
 
 @CommandLine.Command(name = "CustomerConsumer",
@@ -33,12 +34,7 @@ public class CustomerConsumer extends AbstractBaseConsumer<Integer, Customer> {
 
     @Override
     protected Collection<String> getTopicsList() {
-        return Arrays.asList(customerTopic);
-    }
-
-    @Override
-    protected void subscribe(KafkaConsumer<Integer, Customer> consumer) {
-        consumer.subscribe(Arrays.asList(customerTopic));
+        return Collections.singletonList(customerTopic);
     }
 
     @Override
