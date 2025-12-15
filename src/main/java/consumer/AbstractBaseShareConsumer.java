@@ -4,9 +4,11 @@ import common.AbstractBase;
 import org.apache.kafka.clients.consumer.KafkaShareConsumer;
 import picocli.CommandLine;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 public abstract class AbstractBaseShareConsumer<KeyType,ValueType> extends AbstractBase implements Callable<Integer> {
@@ -14,9 +16,14 @@ public abstract class AbstractBaseShareConsumer<KeyType,ValueType> extends Abstr
             description = "Read up to this many messages (subject to batch size). Default -1 --> Keep reading")
     private int maxMessages = -1;
 
+    @CommandLine.Option(names = {"-t", "--threads"},
+            defaultValue = "1",
+            description = "Number of the threads to spawn to run this consumer in parallel (default: ${DEFAULT-VALUE}).")
+    private int numberOfThreads;
+
     protected Logger logger = Logger.getLogger(AbstractBaseShareConsumer.class.getName());
 
-    protected boolean doConsume = true;
+    protected volatile boolean doConsume = true;
     protected int messagesRead = 0;
 
     protected KafkaShareConsumer<KeyType,ValueType> createConsumer() {
@@ -26,15 +33,10 @@ public abstract class AbstractBaseShareConsumer<KeyType,ValueType> extends Abstr
 
 
 
-    private void consume() throws IOException{
+    private void consume() {
         createProperties();
 
         KafkaShareConsumer<KeyType,ValueType> consumer = createConsumer();
-
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("Shutting down gracefully ...");
-            doConsume = false;
-        }));
 
         consumer.subscribe(getTopicsList());
 
@@ -46,6 +48,7 @@ public abstract class AbstractBaseShareConsumer<KeyType,ValueType> extends Abstr
             }
         }
 
+        System.out.printf("Consumer thread %d shutting down%n", Thread.currentThread().threadId());
         consumer.close();
     }
 
@@ -55,7 +58,36 @@ public abstract class AbstractBaseShareConsumer<KeyType,ValueType> extends Abstr
 
     @Override
     public Integer call() throws Exception {
-        consume();
+
+        try (ExecutorService service = Executors.newFixedThreadPool(numberOfThreads)) {
+            for (int i = 0; i < numberOfThreads; i++)
+                service.execute(this::consume);
+
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                System.out.println("Shutting down gracefully ...");
+                doConsume = false;
+
+                service.shutdown();
+                System.out.println("\n*** Initiated shutdown. Main thread waiting for tasks to complete... ***\n");
+
+                boolean terminated;
+                try {
+                    terminated = service.awaitTermination(5, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+
+                if (terminated) {
+                    System.out.println("Terminated cleanly");
+                }
+                else {
+                    System.out.println("Timed out");
+                }
+
+            }));
+
+
+        }
 
         return 0;
     }

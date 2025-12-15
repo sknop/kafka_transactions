@@ -24,6 +24,9 @@ public class GenericAvroShareConsumer extends AbstractBaseShareConsumer<Integer,
     @CommandLine.Option(names = {"--topic"},
             description = "Topic for the customers (default = ${DEFAULT-VALUE})")
     private String topic = "customer";
+    @CommandLine.Option(names = {"-q", "--quiet"},
+            description = "Suppress output")
+    private boolean quiet = false;
 
     final private Duration duration = Duration.ofMillis(10000);
 
@@ -35,11 +38,15 @@ public class GenericAvroShareConsumer extends AbstractBaseShareConsumer<Integer,
     @Override
     protected int consumeBatch(KafkaShareConsumer<Integer, GenericRecord> consumer) {
         ConsumerRecords<Integer, GenericRecord> records = consumer.poll(duration);
-        System.out.printf("*** Batch size %d%n", records.count());
+        if (!quiet)
+            System.out.printf("*** Batch size %d%n", records.count());
+
         for (ConsumerRecord<Integer, GenericRecord> record : records) {
             Schema writerSchema = record.value().getSchema();
+            long threadId = Thread.currentThread().threadId();
 
-            System.out.printf("Found \"%s\" [%s] [%d] %s%n", writerSchema.getFullName(), record.partition(), record.key(), record.value().toString());
+            if (!quiet)
+                System.out.printf("Thread %d Found \"%s\" [%s] [%d] %s%n", threadId, writerSchema.getFullName(), record.partition(), record.key(), record.value().toString());
             consumer.acknowledge(record, AcknowledgeType.ACCEPT);
         }
 

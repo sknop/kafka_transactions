@@ -51,11 +51,6 @@ public abstract class AbstractBaseConsumer<KeyType,ValueType> extends AbstractBa
 
         KafkaConsumer<KeyType,ValueType> consumer = createConsumer();
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("Shutting down gracefully ...");
-            doConsume = false;
-        }));
-
         consumer.subscribe(getTopicsList(), consumerBalanceListener);
 
         while (doConsume) {
@@ -76,6 +71,11 @@ public abstract class AbstractBaseConsumer<KeyType,ValueType> extends AbstractBa
 
     @Override
     public Integer call() throws Exception {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("Shutting down gracefully ...");
+            doConsume = false;
+        }));
+
         consume();
 
         return 0;
