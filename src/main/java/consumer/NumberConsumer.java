@@ -1,12 +1,10 @@
 package consumer;
 
 import org.apache.kafka.clients.consumer.*;
-import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.LongDeserializer;
 import org.apache.kafka.common.serialization.VoidDeserializer;
 import picocli.CommandLine;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.*;
 
@@ -26,7 +24,7 @@ public class NumberConsumer extends AbstractBaseConsumer<Void, Long> {
     @CommandLine.Option(names = {"--asynch"},
             description = "Commit asynchronously (default = ${DEFAULT-VALUE}")
     private boolean async = false;
-    private Duration duration = Duration.ofMillis(10000);
+    private final Duration duration = Duration.ofMillis(10000);
 
     @Override
     protected Collection<String> getTopicsList() {
@@ -36,7 +34,7 @@ public class NumberConsumer extends AbstractBaseConsumer<Void, Long> {
     @Override
     protected int consumeBatch(KafkaConsumer<Void, Long> consumer) {
         ConsumerRecords<Void, Long> records = consumer.poll(duration);
-        System.out.println(String.format("*** Batch size %d", records.count()));
+        System.out.printf("*** Batch size %d%n", records.count());
         for (ConsumerRecord<Void, Long> record : records) {
             System.out.println("Found " + record.value());
             if (single) {

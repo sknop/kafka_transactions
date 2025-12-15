@@ -10,7 +10,6 @@ import picocli.CommandLine;
 import schema.Customer;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;

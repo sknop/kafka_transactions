@@ -10,7 +10,6 @@ import picocli.CommandLine;
 import schema.Product;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
@@ -30,7 +29,7 @@ public class ProductConsumer extends AbstractBaseConsumer<Integer, Product> {
     @CommandLine.Option(names = {"--asynch"},
             description = "Commit asynchronously (default = ${DEFAULT-VALUE})")
     private boolean async = false;
-    private Duration duration = Duration.ofMillis(10000);
+    private final Duration duration = Duration.ofMillis(10000);
 
     @Override
     protected Collection<String> getTopicsList() {
