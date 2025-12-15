@@ -72,7 +72,7 @@ public abstract class AbstractBaseShareConsumer<KeyType,ValueType> extends Abstr
 
                 boolean terminated;
                 try {
-                    terminated = service.awaitTermination(5, TimeUnit.SECONDS);
+                    terminated = service.awaitTermination(10, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
                     throw new RuntimeException(e);
                 }
