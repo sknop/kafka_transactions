@@ -14,7 +14,7 @@
         <kafka.version>4.1.0</kafka.version>
         <avro.version>1.11.4</avro.version>
         <slf4j.version>2.0.13</slf4j.version>
-        <logback.version>1.5.6</logback.version>
+        <logback.version>1.5.19</logback.version>
         <picocli.version>4.7.6</picocli.version>
         <jline.version>3.26.1</jline.version>
         <junit.jupiter.version>5.12.1</junit.jupiter.version>
