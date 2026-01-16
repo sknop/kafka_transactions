@@ -20,6 +20,7 @@
         <junit.jupiter.version>5.12.1</junit.jupiter.version>
         <testcontainer.version>1.21.3</testcontainer.version>
         <jackson.version>2.17.1</jackson.version>
+        <jose4j.version>0.9.6</jose4j.version>
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
         <!-- <nitrite.version>3.0.0</nitrite.version> -->
         <!-- Maven properties for compilation -->
@@ -86,11 +87,6 @@
             <artifactId>kafka-streams-avro-serde</artifactId>
             <version>${confluent.version}</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>io.confluent</groupId>-->
-<!--            <artifactId>monitoring-interceptors</artifactId>-->
-<!--            <version>${confluent.version}</version>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
@@ -115,6 +111,11 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bitbucket.b_c</groupId>
+            <artifactId>jose4j</artifactId>
+            <version>${jose4j.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -202,7 +203,26 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.6.1</version>
+                <configuration>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                                <!-- Add other signature exclusions as needed -->
+                            </excludes>
+                        </filter>
+                        <filter>
+                            <artifact>org.bitbucket.b_c:jose4j</artifact>
+                            <includes>
+                                <include>**/*</include>
+                            </includes>
+                        </filter>
+                    </filters>
+                </configuration>
                 <executions>
                     <execution>
                         <id>assemble-all</id>
